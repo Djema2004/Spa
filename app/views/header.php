@@ -23,7 +23,7 @@
             <!-- Liens de navigation -->
             <div class="flex items-center gap-6 sm:gap-8 text-sm font-medium text-[#5C3A3C]">
                 <a href="/spa/index.php" class="hover:text-[#C87A65] transition-colors duration-200">Home</a>
-                <a href="/spa/index.php#contact" class="hover:text-[#C87A65] transition-colors duration-200">Contact</a>
+                <a href="/spa/app/views/contact.php" class="hover:text-[#C87A65] transition-colors duration-200">Contact</a>
                 <a href="/spa/app/views/login.php" class="hover:text-[#C87A65] transition-colors duration-200">Login</a>
                 
                 <!-- Bouton Register Terracotta -->
