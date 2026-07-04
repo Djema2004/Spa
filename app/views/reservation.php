@@ -1,15 +1,24 @@
 <?php
-// 1. DÉMARRAGE DE LA SESSION ET VÉRIFICATION
+// 1. DÉMARRAGE DE LA SESSION ET VÉRIFICATION SÉCURISÉE
 session_start();
 
-// Sécurité : Si l'utilisateur n'est pas connecté, on le redirige vers la page de connexion
+// SÉCURITÉ STRICTE : Si l'UUID de l'utilisateur n'est pas en session, on redirige vers la connexion
 if (!isset($_SESSION['user_uuid'])) {
     header('Location: login.php');
     exit();
 }
 
-// 2. RÉCUPÉRATION DES DONNÉES DU FORMULAIRE DE CHOIX
-// Si l'utilisateur vient d'une page de soin, on récupère ses choix, sinon on met des valeurs par défaut
+// 2. RÉCUPÉRATION DYNAMIQUE DE LA PAGE PRÉCÉDENTE (REFERER)
+// On stocke la page d'où vient le client en session pour ne pas la perdre si la page recharge
+if (isset($_SERVER['HTTP_REFERER']) && !strpos($_SERVER['HTTP_REFERER'], 'confirm_reservation.php')) {
+    // On extrait juste le nom du fichier (ex: massage.php) pour éviter les URL absolues complexes
+    $_SESSION['back_page'] = basename($_SERVER['HTTP_REFERER']);
+}
+
+// Si la session ne contient rien, on met 'reservation.php' par défaut
+$back_page = isset($_SESSION['back_page']) ? $_SESSION['back_page'] : "reservation.php";
+
+// 3. RÉCUPÉRATION DES DONNÉES DU FORMULAIRE DE CHOIX
 $service_name = isset($_POST['service_name']) ? htmlspecialchars($_POST['service_name']) : "Massage Relaxant aux Huiles";
 $service_duration = isset($_POST['duration']) ? intval($_POST['duration']) : 60;
 $service_price = isset($_POST['price']) ? floatval($_POST['price']) : 2500.00;
@@ -20,7 +29,7 @@ $appointment_time = isset($_POST['time']) ? htmlspecialchars($_POST['time']) : "
 $tax = $service_price * 0.10; 
 $total_price = $service_price + $tax;
 
-// Inclusion de ton header global (contenant la barre de navigation)
+// Inclusion de ton header global
 include __DIR__ . '/header.php'; 
 ?>
 
@@ -70,7 +79,7 @@ include __DIR__ . '/header.php';
                     <span>Frais de service (10%)</span>
                     <span><?php echo number_format($tax, 2); ?> HTG</span>
                 </div>
-                <hr class="border-dashed border-[#F5E6E8] my-2">
+                <hr class="border-dashed border-[#F5E6E8] My-2">
                 <div class="flex justify-between items-center text-base font-bold text-[#5C3A3C]">
                     <span>Montant Total</span>
                     <span class="text-xl text-[#8A5A5C]"><?php echo number_format($total_price, 2); ?> HTG</span>
@@ -89,10 +98,10 @@ include __DIR__ . '/header.php';
             </form>
 
             <div class="grid grid-cols-2 gap-3 pt-4 border-t border-[#F5E6E8] mt-4">
-                <a href="../../index.php" class="text-center bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium py-2.5 rounded-xl transition-all block no-underline">
+                <a href="<?php echo htmlspecialchars($back_page); ?>" class="text-center bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium py-2.5 rounded-xl transition-all block no-underline">
                     Annuler
                 </a>
-                <a href="../../index.php" class="text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2.5 rounded-xl transition-all block no-underline">
+                <a href="<?php echo htmlspecialchars($back_page); ?>" class="text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2.5 rounded-xl transition-all block no-underline">
                     Modifier
                 </a>
             </div>

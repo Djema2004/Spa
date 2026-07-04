@@ -31,11 +31,13 @@ function generate_uuid() {
     );
 }
 
-// 3. TRAITEMENT DE L'INSERTION SI LE FORMULAIRE EST REÇU
+// 3. INITIALISATION DES VARIABLES POUR ÉVITER LES WARNINGS
 $success = false;
 $booking_reference = "";
+$erreur_sql = "Aucune donnée de réservation n'a été reçue. Veuillez repasser par le formulaire de choix.";
 $service_display_name = isset($_POST['service_name']) ? htmlspecialchars($_POST['service_name']) : "Prestation Spa";
 
+// 4. TRAITEMENT DE L'INSERTION SI LE FORMULAIRE EST REÇU
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_uuid = $_SESSION['user_uuid']; 
     $appointment_date = htmlspecialchars($_POST['date']);
@@ -47,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // SÉCURITÉ CLÉ ÉTRANGÈRE : Si l'ID est vide ou ne fait pas la taille d'un UUID (36 caractères)
     if (empty($service_id) || strlen($service_id) !== 36) {
-        // On cherche un ID valide basé sur le nom du service
+        // On cherche un ID valide basé sur le nom du service (colonne 'name')
         $stmtService = $pdo->prepare("SELECT id FROM services WHERE name LIKE :name LIMIT 1");
         $stmtService->execute(['name' => '%' . $service_display_name . '%']);
         $foundService = $stmtService->fetch(PDO::FETCH_ASSOC);
@@ -82,13 +84,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             $success = true;
+            $erreur_sql = ""; // Nettoyage de l'erreur puisqu'on a réussi
         } catch (PDOException $e) {
             $erreur_sql = "Erreur lors de l'enregistrement SQL : " . $e->getMessage();
         }
     } else {
-        $erreur_sql = "Impossible de valider la réservation car aucun service n'existe dans votre table 'services'. Veuillez ajouter au moins un soin dans phpMyAdmin.";
+        $erreur_sql = "Impossible de valider la réservation car aucun service n'existe dans votre table 'services'. Veuillez exécuter l'insertion de vos soins dans phpMyAdmin.";
     }
 }
+
+// Récupération de la page d'origine dynamique pour le bouton d'erreur
+$back_page = isset($_SESSION['back_page']) ? $_SESSION['back_page'] : "reservation.php";
 
 include __DIR__ . '/header.php'; 
 ?>
@@ -148,12 +154,12 @@ include __DIR__ . '/header.php';
                 </div>
 
                 <h2 class="text-2xl font-serif text-red-700 font-bold">Une erreur est survenue</h2>
-                <p class="text-sm text-gray-500 mt-2">
+                <p class="text-sm text-gray-500 mt-2 px-2">
                     <?php echo $erreur_sql; ?>
                 </p>
 
                 <div class="mt-8">
-                    <a href="reservation.php" class="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl shadow-md transition-colors duration-200 block border-0 text-center text-sm no-underline">
+                    <a href="<?php echo htmlspecialchars($back_page); ?>" class="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl shadow-md transition-colors duration-200 block border-0 text-center text-sm no-underline">
                         Retourner à la réservation
                     </a>
                 </div>
