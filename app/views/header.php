@@ -31,11 +31,7 @@
                     Register
                 </a>
 
-                <!-- Bouton Logout adapté au thème sombre du texte -->
-                <a href="/spa/app/views/logout.php" class="text-[#4A2E30]/70 hover:text-[#4A2E30] font-semibold transition-colors duration-200 flex items-center gap-1">
-                    <i class="fa-solid fa-power-off text-xs"></i> Logout
-                </a>
-            </div>
+                
 
         </div>
     </nav>

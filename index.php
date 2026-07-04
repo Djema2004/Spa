@@ -1,7 +1,6 @@
 <?php 
 // 1. CORRECTION INCLUSION : Inclusion propre depuis le dossier des vues partagées
 include __DIR__ . '/app/views/header.php'; 
-require_once __DIR__ . '/app/controllers/GalleryController.php';
 ?>
 
 <div class="bg-[#FAF7F2] text-[#5C3A3C] min-h-screen font-sans flex flex-col justify-between">
@@ -231,7 +230,7 @@ require_once __DIR__ . '/app/controllers/GalleryController.php';
 
             <!-- BOUTON AJOUTÉ : ESPACE POUR ENTRER DANS LA PAGE IMAGE -->
             <div class="text-center pt-4">
-                <a href="app/views/galerie.php" class="inline-flex items-center gap-3 bg-[#FAF7F2] hover:bg-[#FCECE7] text-[#C87A65] hover:text-[#A3523D] border-2 border-[#C87A65]/40 hover:border-[#A3523D] font-semibold text-sm px-8 py-3.5 rounded-full transition-all duration-300 tracking-wider shadow-sm hover:shadow no-underline group">
+                <a href="index.php?url=galerie" class="inline-flex items-center gap-3 bg-[#FAF7F2] hover:bg-[#FCECE7] text-[#C87A65] hover:text-[#A3523D] border-2 border-[#C87A65]/40 hover:border-[#A3523D] font-semibold text-sm px-8 py-3.5 rounded-full transition-all duration-300 tracking-wider shadow-sm hover:shadow no-underline group">
                     <i class="fa-regular fa-images text-base group-hover:scale-110 transition-transform"></i>
                     Voir toute la galerie photos
                 </a>
@@ -250,6 +249,7 @@ require_once __DIR__ . '/app/controllers/GalleryController.php';
 // Inclusion correcte du footer
 include __DIR__ . '/app/views/footer.php'; 
 ?>
+
 
 <!-- SCRIPT JAVASCRIPT POUR LE CAROUSEL -->
 <script>
