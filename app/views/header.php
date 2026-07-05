@@ -22,14 +22,20 @@
             
             <!-- Liens de navigation -->
             <div class="flex items-center gap-6 sm:gap-8 text-sm font-medium text-[#5C3A3C]">
-                <a href="/spa/index.php" class="hover:text-[#C87A65] transition-colors duration-200">Home</a>
-                <a href="/spa/app/views/contact.php" class="hover:text-[#C87A65] transition-colors duration-200">Contact</a>
-                <a href="/spa/app/views/login.php" class="hover:text-[#C87A65] transition-colors duration-200">Login</a>
-                
-                <!-- Bouton Register Terracotta -->
-                <a href="/spa/app/views/register.php" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs sm:text-sm px-5 py-2 rounded-full shadow-sm shadow-[#C87A65]/10 transition-all duration-300 font-semibold tracking-wide hover:-translate-y-0.5 transform">
-                    Register
-                </a>
+    <!-- Lien vers l'Accueil -->
+    <a href="index.php?url=home" class="hover:text-[#C87A65] transition-colors duration-200">Home</a>
+    
+    <!-- Lien vers le Contact (il passera par ton routeur) -->
+    <a href="index.php?url=contact" class="hover:text-[#C87A65] transition-colors duration-200">Contact</a>
+    
+    <!-- Lien vers la Connexion via le Contrôleur -->
+    <a href="index.php?url=login" class="hover:text-[#C87A65] transition-colors duration-200">Login</a>
+    
+    <!-- Bouton Register Terracotta via le Contrôleur -->
+    <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs sm:text-sm px-5 py-2 rounded-full shadow-sm shadow-[#C87A65]/10 transition-all duration-300 font-semibold tracking-wide hover:-translate-y-0.5 transform no-underline">
+        Register
+    </a>
+</div>
 
                 
 

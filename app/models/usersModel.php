@@ -1,15 +1,18 @@
 <?php
-// app/models/User.php
+// app/models/usersModel.php
 
-require_once __DIR__ . '/../config/connect.php';
+// On remonte de deux niveaux pour sortir de 'models' et de 'app', afin d'atteindre la racine du projet
+require_once __DIR__ . '/../../config/connect.php';
 
-class User {
+class UsersModel {
     private $db;
 
     public function __construct() {
         $connection = new Connect();
         $this->db = $connection->pdo;
     }
+    
+    // ... reste de ta fonction register() inchangée ...
 
     // Méthode pour inscrire un utilisateur avec un UUID
     public function register($name, $email, $password) {
@@ -36,7 +39,6 @@ class User {
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
             // 4. Insérer les données dans ta table 'users'
-            // Ajuste les noms des colonnes selon la structure exacte de ta table
             $query = "INSERT INTO users (id, name, email, password, role) VALUES (:id, :name, :email, :password, 'client')";
             $stmt = $this->db->prepare($query);
             

@@ -1,6 +1,6 @@
 <?php 
 // 1. CORRECTION INCLUSION : Inclusion propre depuis le dossier des vues partagées
-include __DIR__ . '/app/views/header.php'; 
+include __DIR__ . '/header.php'; 
 ?>
 
 <div class="bg-[#FAF7F2] text-[#5C3A3C] min-h-screen font-sans flex flex-col justify-between">
@@ -247,7 +247,7 @@ include __DIR__ . '/app/views/header.php';
 
 <?php 
 // Inclusion correcte du footer
-include __DIR__ . '/app/views/footer.php'; 
+include __DIR__ . '/footer.php'; 
 ?>
 
 <!-- SCRIPT JAVASCRIPT POUR LE CAROUSEL -->
