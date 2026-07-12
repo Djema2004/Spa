@@ -1,6 +1,8 @@
 <?php
 // 1. DÉMARRAGE DE LA SESSION (Optionnel mais recommandé si tu veux lier au client connecté)
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // 2. CONFIGURATION ET TRAITEMENT DU FORMULAIRE
 $msg_status = "";

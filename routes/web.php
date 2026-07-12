@@ -3,6 +3,7 @@
 
 return [
     'home'             => ['controller' => 'HomeController', 'action' => 'index'],
+    'contact'           => ['controller' => 'HomeController', 'action' => 'contact'],
     'login'            => ['controller' => 'AuthController', 'action' => 'login'],
     'register'         => ['controller' => 'AuthController', 'action' => 'register'],
     'logout'           => ['controller' => 'AuthController', 'action' => 'logout'],
@@ -12,10 +13,9 @@ return [
     // Services / Soins
     'sauna'            => ['controller' => 'ServiceController', 'action' => 'showSauna'],
     'massage'          => ['controller' => 'ServiceController', 'action' => 'showMassage'],
-    'soin_visage'      => ['controller' => 'ServiceController', 'action' => 'showSoinVisage'],
     'soins-visage'       => ['controller' => 'ServiceController', 'action' => 'showSoinVisage'],
     'epilation'        => ['controller' => 'ServiceController', 'action' => 'showEpilation'],
-    'extension_cils'    => ['controller' => 'ServiceController', 'action' => 'showExtensionCils'],
+    'extensions'    => ['controller' => 'ServiceController', 'action' => 'showExtensionCils'],
     'galerie'          => ['controller' => 'GalleryController', 'action' => 'index'],
     
     // 🎯 Les deux routes pointent vers la même action pour éviter les erreurs !

@@ -21,9 +21,9 @@
             <div class="flex items-center gap-4 sm:gap-6 text-sm font-medium text-[#5C3A3C]">
                 <a href="index.php?url=home" class="hover:text-[#C87A65] transition-colors duration-200">Home</a>
                 
-                <a href="index.php?url=soin_visage" class="hover:text-[#C87A65] transition-colors duration-200">Soin_Visage</a>
+                <a href="index.php?url=soins-visage" class="hover:text-[#C87A65] transition-colors duration-200">Soins_Visage</a>
                 <a href="index.php?url=epilation" class="hover:text-[#C87A65] transition-colors duration-200">Épilation</a>
-                <a href="index.php?url=extension_cils" class="hover:text-[#C87A65] transition-colors duration-200">Cils</a>
+                <a href="index.php?url=extensions" class="hover:text-[#C87A65] transition-colors duration-200">Extensions</a>
                 <a href="index.php?url=manucure" class="hover:text-[#C87A65] transition-colors duration-200">Onglerie</a>
                 <a href="index.php?url=galerie" class="hover:text-[#C87A65] transition-colors duration-200">Galerie</a>
                 

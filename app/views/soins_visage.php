@@ -2,14 +2,12 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// Inclusion du header situé dans le même sous-dossier des vues
-include __DIR__ . '/header.php'; 
+// Inclusion propre pour le routeur global MVC
+include 'header.php'; 
 ?>
 
-<!-- Fond de page : Blanc cassé/Crème (bg-[#FAF7F2]) et texte Vieux Rose foncé (text-[#5C3A3C]) -->
 <div class="bg-[#FAF7F2] text-[#5C3A3C] min-h-screen font-sans flex flex-col justify-between">
 
-    <!-- 1. EN-TÊTE DE LA PAGE (Hero de la catégorie) -->
     <header class="relative bg-[#FCECE7] py-16 px-6 border-b border-[#FCD7CC]/40 text-center space-y-4 shadow-inner">
         <span class="text-xs font-semibold tracking-widest uppercase bg-[#FCD7CC] px-4 py-1.5 rounded-full inline-block">
             ✨ Éclat & Jeunesse
@@ -23,11 +21,9 @@ include __DIR__ . '/header.php';
         <div class="w-16 h-0.5 bg-[#C87A65] mx-auto pt-0.5"></div>
     </header>
 
-    <!-- 2. SECTION DE LA CARTE DES SOINS (Grille des différentes prestations) -->
     <main class="max-w-7xl mx-auto px-6 py-16 w-full flex-1">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <!-- Soin 1 : Soin Purifiant Éclat -->
             <div class="bg-white border border-[#FCD7CC]/40 rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300">
                 <div>
                     <div class="h-48 overflow-hidden relative">
@@ -43,13 +39,12 @@ include __DIR__ . '/header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">1 500 gdes</span>
-                    <a href="/spa/app/views/register.php" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
+                    <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
                         Réserver
                     </a>
                 </div>
             </div>
 
-            <!-- Soin 2 : Soin Hydratation Intense -->
             <div class="bg-white border border-[#FCD7CC]/40 rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300">
                 <div>
                     <div class="h-48 overflow-hidden relative">
@@ -65,13 +60,12 @@ include __DIR__ . '/header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">2 500 gdes</span>
-                    <a href="/spa/app/views/register.php" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
+                    <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
                         Réserver
                     </a>
                 </div>
             </div>
 
-            <!-- Soin 3 : Soin Anti-Âge & Liftant Kobido -->
             <div class="bg-white border border-[#FCD7CC]/40 rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300">
                 <div>
                     <div class="h-48 overflow-hidden relative">
@@ -81,13 +75,13 @@ include __DIR__ . '/header.php';
                     <div class="p-6 space-y-3">
                         <h3 class="text-xl font-bold text-[#4A2E30]">Le Rituel Suprême Lift</h3>
                         <p class="text-sm font-light text-[#5C3A3C]/90 leading-relaxed">
-                            Inspiré des rituels japonais, ce massage facial liftant stimule intensément le collagène, redessine l'ovale du visage et lisse les ridules.
+                            Inspiré des rituels japonais, ce massage facial liftant stimule intensément le collagène, redessine l'ovale du visage et lise les ridules.
                         </p>
                     </div>
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">4 000 gdes</span>
-                    <a href="/spa/app/views/register.php" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
+                    <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
                         Réserver
                     </a>
                 </div>
@@ -95,7 +89,6 @@ include __DIR__ . '/header.php';
 
         </div>
 
-        <!-- 3. ZONE D'INFORMATION CONSEIL -->
         <div class="mt-16 bg-[#FCECE7]/60 rounded-3xl p-8 border border-[#FCD7CC]/30 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div class="space-y-4">
                 <h3 class="text-2xl font-serif font-bold text-[#4A2E30]">Diagnostic de peau offert</h3>
@@ -109,16 +102,15 @@ include __DIR__ . '/header.php';
             </div>
             <div class="text-center md:text-right">
                 <p class="text-xs uppercase tracking-widest text-[#C87A65] font-semibold mb-2">Besoin d'un conseil ?</p>
-                <a href="index.php#contact" class="inline-block text-[#4A2E30] hover:text-[#C87A65] font-medium underline text-sm transition-colors">
+                <a href="index.php?url=home#contact" class="inline-block text-[#4A2E30] hover:text-[#C87A65] font-medium underline text-sm transition-colors">
                     Demander une recommandation personnalisée
                 </a>
             </div>
         </div>
     </main>
 
-    <!-- 4. BOUTON DE RETOUR RAPIDE -->
     <div class="text-center pb-12">
-        <a href="index.php" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C87A65] hover:text-[#A3523D] transition-colors group">
+        <a href="index.php?url=home" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C87A65] hover:text-[#A3523D] transition-colors group">
             <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
             Retour à l'accueil
         </a>
@@ -127,6 +119,6 @@ include __DIR__ . '/header.php';
 </div>
 
 <?php 
-// Inclusion du footer
-include __DIR__ . '/footer.php'; 
+// Inclusion propre pour le routeur global MVC
+include 'footer.php'; 
 ?>

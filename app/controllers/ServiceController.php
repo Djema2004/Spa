@@ -19,7 +19,7 @@ class ServiceController {
     }
 
     public function showSoinVisage() {
-        include dirname(__DIR__) . '/views/soin_visage.php';
+        include dirname(__DIR__) . '/views/soins_visage.php';
     }
 
     public function showEpilation() {

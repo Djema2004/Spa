@@ -1,8 +1,9 @@
-<?php
+<?php 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-include __DIR__ . '/header.php'; 
+// 🎯 CORRIGÉ : Utilisation de l'inclusion simple pour le routeur MVC
+include 'header.php'; 
 ?>
 
 <div class="bg-[#FDFBF9] min-h-screen py-12 px-6">
@@ -53,5 +54,6 @@ include __DIR__ . '/header.php';
 </div>
 
 <?php 
-include __DIR__ . '/footer.php'; 
+// 🎯 CORRIGÉ : Utilisation de l'inclusion simple pour le routeur MVC
+include 'footer.php'; 
 ?>
