@@ -1,4 +1,7 @@
 <?php 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 // Inclusion du header situé dans le même sous-dossier des vues
 include __DIR__ . '/header.php'; 
 ?>
