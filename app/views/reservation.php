@@ -98,13 +98,14 @@ include __DIR__ . '/header.php';
             </form>
 
             <div class="grid grid-cols-2 gap-3 pt-4 border-t border-[#F5E6E8] mt-4">
-                <a href="<?php echo htmlspecialchars($back_page); ?>" class="text-center bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium py-2.5 rounded-xl transition-all block no-underline">
-                    Annuler
-                </a>
-                <a href="<?php echo htmlspecialchars($back_page); ?>" class="text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2.5 rounded-xl transition-all block no-underline">
-                    Modifier
-                </a>
-            </div>
+    <!-- 🎯 Ajout de /spa/ devant index.php -->
+    <a href="/spa/index.php?url=client-dashboard" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-semibold transition hover:bg-gray-300">
+        Annuler
+    </a>
+    <a href="/spa/index.php?url=client-dashboard" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-semibold transition hover:bg-gray-300">
+        Modifier
+    </a>
+</div>
 
         </div>
     </main>

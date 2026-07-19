@@ -1,45 +1,22 @@
 <?php
-// C:\wamp64\www\Spa\index.php
+// index.php (à la racine du projet)
 
+// 1. Démarrage de la session globale pour tout le site (évite les warnings orange)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. Charger les routes
-$routesPath = __DIR__ . '/routes/web.php';
-if (!file_exists($routesPath)) {
-    die("Fichier des routes introuvable.");
-}
-$routes = require_once $routesPath;
+// 2. Inclusion des composants du Noyau (Core) et du tableau de routes
+require_once 'core/Controller.php'; // 🎯 Ajouté ici pour que tous tes contrôleurs puissent en hériter !
+require_once 'core/Database.php';      // 🎯 Ajouté ici pour que tous tes modèles puissent en hériter !
+require_once 'core/Router.php';
+$routes = require_once 'routes/web.php';
 
-// 2. Récupérer l'URL demandée
-$url = isset($_GET['url']) ? trim($_GET['url'], '/') : 'home';
+// 3. Initialisation du Routeur avec tes routes
+$router = new Router($routes);
 
-// 3. Traiter le routage
-if (array_key_exists($url, $routes)) {
-    $controllerName = $routes[$url]['controller'];
-    $actionName = $routes[$url]['action'];
+// 4. Récupération de l'URL demandée (ex: index.php?url=client-dashboard)
+$url = isset($_GET['url']) ? $_GET['url'] : 'home';
 
-    // Chemin correct puisque 'controllers' est dans 'app'
-    $controllerPath = __DIR__ . '/app/controllers/' . $controllerName . '.php';
-
-    if (file_exists($controllerPath)) {
-        require_once $controllerPath;
-        
-        if (class_exists($controllerName)) {
-            $controller = new $controllerName();
-            if (method_exists($controller, $actionName)) {
-                $controller->$actionName();
-            } else {
-                die("Erreur : L'action {$actionName} n'existe pas.");
-            }
-        } else {
-            die("Erreur : La classe {$controllerName} est introuvable.");
-        }
-    } else {
-        die("Erreur : Le fichier contrôleur [ {$controllerName}.php ] est introuvable.");
-    }
-} else {
-    http_response_code(404);
-    die("<h1>Page non trouvée (404)</h1>La route '" . htmlspecialchars($url) . "' n'existe pas.");
-}
+// 5. On lance l'application !
+$router->dispatch($url);
