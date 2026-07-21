@@ -1,0 +1,17 @@
+# 1. Aktive motè rewritaj la
+RewriteEngine On
+
+# 2. Defini baz pwojè a
+RewriteBase /spa/
+
+# 3. Anpeche moun wè lis fichye ki nan dosye yo (Sekirite)
+Options -Indexes
+
+# 4. Si se yon vrè fichye ki egziste, kite l pase (pa manyen li)
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# 5. Si se yon vrè dosye ki egziste, kite l pase
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# 6. Voye tout lòt demann yo bay index.php
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
