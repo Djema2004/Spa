@@ -43,9 +43,16 @@ include __DIR__ . '/header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">2 000 gdes</span>
-                    <a href="/spa/app/views/register.php" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
-                        Réserver
-                    </a>
+                    
+                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                    <form action="index.php?url=reservation/checkout" method="POST">
+                        <input type="hidden" name="service_nom" value="Sauna - Instant Solo">
+                        <input type="hidden" name="prix_soin" value="2000.00">
+                        
+                        <button type="submit" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors cursor-pointer">
+                            Réserver
+                        </button>
+                    </form>
                 </div>
             </div>
 
@@ -65,9 +72,16 @@ include __DIR__ . '/header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">3 500 gdes</span>
-                    <a href="/spa/app/views/register.php" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
-                        Réserver
-                    </a>
+                    
+                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                    <form action="index.php?url=reservation/checkout" method="POST">
+                        <input type="hidden" name="service_nom" value="Sauna - Rituel Harmonie">
+                        <input type="hidden" name="prix_soin" value="3500.00">
+                        
+                        <button type="submit" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors cursor-pointer">
+                            Réserver
+                        </button>
+                    </form>
                 </div>
             </div>
 
@@ -87,9 +101,16 @@ include __DIR__ . '/header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">5 500 gdes</span>
-                    <a href="/spa/app/views/register.php" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
-                        Réserver
-                    </a>
+                    
+                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                    <form action="index.php?url=reservation/checkout" method="POST">
+                        <input type="hidden" name="service_nom" value="Sauna - Parenthèse Complice (Duo)">
+                        <input type="hidden" name="prix_soin" value="5500.00">
+                        
+                        <button type="submit" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors cursor-pointer">
+                            Réserver
+                        </button>
+                    </form>
                 </div>
             </div>
 

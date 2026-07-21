@@ -6,8 +6,10 @@ if (session_status() === PHP_SESSION_NONE) {
 include 'header.php'; 
 ?>
 
+<!-- Fond de page : Blanc cassé/Crème (bg-[#FAF7F2]) et texte Vieux Rose foncé (text-[#5C3A3C]) -->
 <div class="bg-[#FAF7F2] text-[#5C3A3C] min-h-screen font-sans flex flex-col justify-between">
 
+    <!-- 1. EN-TÊTE DE LA PAGE (Hero de la catégorie) -->
     <header class="relative bg-[#FCECE7] py-16 px-6 border-b border-[#FCD7CC]/40 text-center space-y-4 shadow-inner">
         <span class="text-xs font-semibold tracking-widest uppercase bg-[#FCD7CC] px-4 py-1.5 rounded-full inline-block">
             ✨ Douceur Absolue
@@ -21,9 +23,11 @@ include 'header.php';
         <div class="w-16 h-0.5 bg-[#C87A65] mx-auto pt-0.5"></div>
     </header>
 
+    <!-- 2. SECTION DES PRESTATIONS (Grille des différentes formules) -->
     <main class="max-w-7xl mx-auto px-6 py-16 w-full flex-1">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
+            <!-- Prestation 1 : Zones Visage -->
             <div class="bg-white border border-[#FCD7CC]/40 rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300">
                 <div>
                     <div class="h-48 overflow-hidden relative">
@@ -39,12 +43,20 @@ include 'header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">750 gdes</span>
-                    <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
-                        Réserver
-                    </a>
+                    
+                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                    <form action="index.php?url=reservation/checkout" method="POST">
+                        <input type="hidden" name="service_nom" value="Épilation - Zones Visage">
+                        <input type="hidden" name="prix_soin" value="750.00">
+                        
+                        <button type="submit" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors cursor-pointer">
+                            Réserver
+                        </button>
+                    </form>
                 </div>
             </div>
 
+            <!-- Prestation 2 : Demi-Jambes ou Bras -->
             <div class="bg-white border border-[#FCD7CC]/40 rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300">
                 <div>
                     <div class="h-48 overflow-hidden relative">
@@ -60,12 +72,20 @@ include 'header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">1 500 gdes</span>
-                    <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
-                        Réserver
-                    </a>
+                    
+                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                    <form action="index.php?url=reservation/checkout" method="POST">
+                        <input type="hidden" name="service_nom" value="Épilation - Demi-Jambes ou Bras">
+                        <input type="hidden" name="prix_soin" value="1500.00">
+                        
+                        <button type="submit" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors cursor-pointer">
+                            Réserver
+                        </button>
+                    </form>
                 </div>
             </div>
 
+            <!-- Prestation 3 : Forfait Corps Complet -->
             <div class="bg-white border border-[#FCD7CC]/40 rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300">
                 <div>
                     <div class="h-48 overflow-hidden relative">
@@ -81,14 +101,22 @@ include 'header.php';
                 </div>
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">3 500 gdes</span>
-                    <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
-                        Réserver
-                    </a>
+                    
+                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                    <form action="index.php?url=reservation/checkout" method="POST">
+                        <input type="hidden" name="service_nom" value="Épilation - Forfait Corps Complet">
+                        <input type="hidden" name="prix_soin" value="3500.00">
+                        
+                        <button type="submit" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors cursor-pointer">
+                            Réserver
+                        </button>
+                    </form>
                 </div>
             </div>
 
         </div>
 
+        <!-- 3. ZONE D'INFORMATION -->
         <div class="mt-16 bg-[#FCECE7]/60 rounded-3xl p-8 border border-[#FCD7CC]/30 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div class="space-y-4">
                 <h3 class="text-2xl font-serif font-bold text-[#4A2E30]">Une Charte de Qualité Rigoureuse</h3>
@@ -109,6 +137,7 @@ include 'header.php';
         </div>
     </main>
 
+    <!-- 4. BOUTON DE RETOUR RAPIDE -->
     <div class="text-center pb-12">
         <a href="index.php?url=home" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C87A65] hover:text-[#A3523D] transition-colors group">
             <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>

@@ -1,49 +1,51 @@
 <?php
-// core/Router.php
 
-class router {
-    protected $routes = [];
+class Router {
+    private $routes = [];
 
-    // 1. On charge le tableau de routes (ex: routes/web.php) dans le routeur
-    public function __construct($routes) {
+    public function __construct(array $routes) {
         $this->routes = $routes;
     }
 
-    // 2. On analyse l'URL et on lance le bon contrôleur et la bonne action
-    public function dispatch($url) {
-        // Si l'URL est vide (ex: localhost/spa/), on charge la page 'home' par défaut
+    public function dispatch(string $url) {
+        // Nettoyage de l'URL
+        $url = trim($url, '/');
         if (empty($url)) {
             $url = 'home';
         }
 
-        // On vérifie si la route demandée existe dans notre fichier routes/web.php
+        // Vérification de l'existence de la route dans web.php
         if (array_key_exists($url, $this->routes)) {
             $controllerName = $this->routes[$url]['controller'];
-            $actionName = $this->routes[$url]['action'];
+            $actionName     = $this->routes[$url]['action'];
 
-            // On inclut physiquement le fichier du contrôleur demandé
-            $controllerFile = 'app/controllers/' . $controllerName . '.php';
-            
-            if (file_exists($controllerFile)) {
-                require_once $controllerFile;
+            $controllerPath = __DIR__ . '/../app/controllers/' . $controllerName . '.php';
 
-                // On instancie le contrôleur (ex: $controller = new ServiceController();)
-                $controller = new $controllerName();
+            if (file_exists($controllerPath)) {
+                require_once $controllerPath;
 
-                // On exécute la méthode/action (ex: $controller->showSoinVisage();)
-                if (method_exists($controller, $actionName)) {
-                    $controller->$actionName();
+                if (class_exists($controllerName)) {
+                    $controller = new $controllerName();
+
+                    if (method_exists($controller, $actionName)) {
+                        // Appelle la méthode (ex: checkout)
+                        $controller->$actionName();
+                        return;
+                    } else {
+                        die("Erreur : La méthode <b>{$actionName}</b> n'existe pas dans <b>{$controllerName}</b>.");
+                    }
                 } else {
-                    echo "Erreur : La méthode {$actionName} n'existe pas dans le contrôleur {$controllerName}.";
+                    die("Erreur : La classe <b>{$controllerName}</b> est introuvable.");
                 }
             } else {
-                echo "Erreur : Le fichier contrôleur {$controllerFile} est introuvable.";
+                die("Erreur : Le fichier <b>{$controllerPath}</b> est introuvable.");
             }
-        } else {
-            // Si la route n'existe pas du tout dans le tableau (Erreur 404)
-            header("HTTP/1.0 404 Not Found");
-            echo "<h1>404 Not Found</h1>";
-            echo "La page '<strong>" . htmlspecialchars($url) . "</strong>' n'existe pas sur ce site.";
         }
+
+        // Si la route n'est pas définie dans routes/web.php
+        header("HTTP/1.0 404 Not Found");
+        echo "<h1>Page non trouvée (404)</h1>";
+        echo "<p>La route <strong>" . htmlspecialchars($url) . "</strong> n'existe pas dans routes/web.php.</p>";
+        exit();
     }
 }

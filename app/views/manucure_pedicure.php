@@ -27,7 +27,7 @@ include __DIR__ . '/header.php';
                 <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600" 
                      alt="Manucure Spa" 
                      class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105">
-                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#4A2E30] font-serif font-black px-4 py-1.5 rounded-full text-sm shadow-sm border border-[#FCD7CC]/30">45 €</span>
+                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#4A2E30] font-serif font-black px-4 py-1.5 rounded-full text-sm shadow-sm border border-[#FCD7CC]/30">1 350 gdes</span>
             </div>
             <div class="p-6 sm:p-8 flex-1 flex flex-col justify-between">
                 <div>
@@ -37,11 +37,17 @@ include __DIR__ . '/header.php';
                         Un soin complet comprenant le limage, le traitement des cuticules, un gommage exfoliant au sucre de canne et un modelage relaxant aux huiles essentielles.
                     </p>
                 </div>
-                <!-- Bouton de réservation -->
-                <a href="/spa/app/views/reservation.php?service=manucure_rituel" 
-                   class="w-full block text-center bg-[#C87A65] hover:bg-[#A3523D] text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm shadow-md shadow-[#C87A65]/10 tracking-wider hover:-translate-y-0.5 transform">
-                    <i class="fa-regular fa-calendar-check mr-1.5"></i> Réserver ce soin
-                </a>
+                
+                <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                <form action="index.php?url=reservation/checkout" method="POST" class="mt-auto">
+                    <input type="hidden" name="service_nom" value="Manucure Rituel Douceur">
+                    <input type="hidden" name="prix_soin" value="1350.00">
+                    
+                    <button type="submit" 
+                            class="w-full block text-center bg-[#C87A65] hover:bg-[#A3523D] text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm shadow-md shadow-[#C87A65]/10 tracking-wider hover:-translate-y-0.5 transform cursor-pointer">
+                        <i class="fa-regular fa-calendar-check mr-1.5"></i> Réserver (Acompte 30%)
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -51,7 +57,7 @@ include __DIR__ . '/header.php';
                 <img src="https://images.unsplash.com/photo-1519415510236-8a5d6404652c?auto=format&fit=crop&q=80&w=600" 
                      alt="Pédicure Spa" 
                      class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105">
-                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#4A2E30] font-serif font-black px-4 py-1.5 rounded-full text-sm shadow-sm border border-[#FCD7CC]/30">55 €</span>
+                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#4A2E30] font-serif font-black px-4 py-1.5 rounded-full text-sm shadow-sm border border-[#FCD7CC]/30">1 650 gdes</span>
             </div>
             <div class="p-6 sm:p-8 flex-1 flex flex-col justify-between">
                 <div>
@@ -61,21 +67,27 @@ include __DIR__ . '/header.php';
                         Bain de pieds relaxant aux sels de l'Himalaya, gommage, soin des callosités et des ongles, suivi d'un massage divin hydratant au beurre de karité.
                     </p>
                 </div>
-                <!-- Bouton de réservation -->
-                <a href="/spa/app/views/reservation.php?service=pedicure_spa" 
-                   class="w-full block text-center bg-[#C87A65] hover:bg-[#A3523D] text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm shadow-md shadow-[#C87A65]/10 tracking-wider hover:-translate-y-0.5 transform">
-                    <i class="fa-regular fa-calendar-check mr-1.5"></i> Réserver ce soin
-                </a>
+                
+                <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                <form action="index.php?url=reservation/checkout" method="POST" class="mt-auto">
+                    <input type="hidden" name="service_nom" value="Pédicure Spa Sensorielle">
+                    <input type="hidden" name="prix_soin" value="1650.00">
+                    
+                    <button type="submit" 
+                            class="w-full block text-center bg-[#C87A65] hover:bg-[#A3523D] text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm shadow-md shadow-[#C87A65]/10 tracking-wider hover:-translate-y-0.5 transform cursor-pointer">
+                        <i class="fa-regular fa-calendar-check mr-1.5"></i> Réserver (Acompte 30%)
+                    </button>
+                </form>
             </div>
         </div>
 
         <!-- Prestation 3 : Pose de Vernis Semi-Permanent -->
         <div class="bg-white rounded-[2rem] shadow-xl shadow-[#FCD7CC]/10 border border-[#FCD7CC]/30 overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-2xl hover:shadow-[#FCD7CC]/20">
             <div class="relative overflow-hidden h-64">
-                <img src= "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600"
+                <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600"
                      alt="Pose de vernis" 
                      class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105">
-                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#4A2E30] font-serif font-black px-4 py-1.5 rounded-full text-sm shadow-sm border border-[#FCD7CC]/30">35 €</span>
+                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#4A2E30] font-serif font-black px-4 py-1.5 rounded-full text-sm shadow-sm border border-[#FCD7CC]/30">1 050 gdes</span>
             </div>
             <div class="p-6 sm:p-8 flex-1 flex flex-col justify-between">
                 <div>
@@ -85,11 +97,17 @@ include __DIR__ . '/header.php';
                         Mise en forme des ongles suivie d'une pose de vernis semi-permanent avec la couleur de votre choix parmi notre large gamme prestigieuse. Tenue 2 semaines.
                     </p>
                 </div>
-                <!-- Bouton de réservation -->
-                <a href="/spa/app/views/reservation.php?service=vernis_semi" 
-                   class="w-full block text-center bg-[#C87A65] hover:bg-[#A3523D] text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm shadow-md shadow-[#C87A65]/10 tracking-wider hover:-translate-y-0.5 transform">
-                    <i class="fa-regular fa-calendar-check mr-1.5"></i> Réserver ce soin
-                </a>
+                
+                <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
+                <form action="index.php?url=reservation/checkout" method="POST" class="mt-auto">
+                    <input type="hidden" name="service_nom" value="Beauté & Semi-Permanent">
+                    <input type="hidden" name="prix_soin" value="1050.00">
+                    
+                    <button type="submit" 
+                            class="w-full block text-center bg-[#C87A65] hover:bg-[#A3523D] text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm shadow-md shadow-[#C87A65]/10 tracking-wider hover:-translate-y-0.5 transform cursor-pointer">
+                        <i class="fa-regular fa-calendar-check mr-1.5"></i> Réserver (Acompte 30%)
+                    </button>
+                </form>
             </div>
         </div>
 
