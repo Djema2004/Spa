@@ -21,4 +21,6 @@ return [
     // 🎯 Les deux routes pointent vers la même action pour éviter les erreurs !
     'manucure'          => ['controller' => 'ServiceController', 'action' => 'manucure_pedicure'],
     'manucure_pedicure' => ['controller' => 'ServiceController', 'action' => 'manucure_pedicure'],
+    'reservation/paiement' => ['controller' => 'ReservationController', 'action' => 'checkout'],
+    'reservation/confirmer' => ['controller' => 'ReservationController', 'action' => 'confirmer'],
 ];

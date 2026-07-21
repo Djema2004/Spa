@@ -239,12 +239,7 @@ include __DIR__ . '/header.php';
         </div>
     </section>
 
-    <section id="contact" class="bg-[#FAF7F2] border-t border-[#FCD7CC]/30 py-16">
-        <div class="max-w-md mx-auto px-6 text-center space-y-2">
-            <h2 class="text-2xl font-serif font-bold text-[#4A2E30]">Prendre Contact</h2>
-        </div>
-    </section>
-
+   
 <?php 
 // Inclusion correcte du footer
 include __DIR__ . '/footer.php'; 

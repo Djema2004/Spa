@@ -28,7 +28,7 @@
                 <a href="index.php?url=galerie" class="hover:text-[#C87A65] transition-colors duration-200">Galerie</a>
                 
                 <a href="index.php?url=contact" class="hover:text-[#C87A65] transition-colors duration-200">Contact</a>
-                <a href="index.php?url=login" class="hover:text-[#C87A65] transition-colors duration-200">Login</a>
+
                 
                 <a href="index.php?url=register" class="bg-[#C87A65] hover:bg-[#A3523D] text-white text-xs sm:text-sm px-4 py-2 rounded-full shadow-sm shadow-[#C87A65]/10 transition-all duration-300 font-semibold tracking-wide hover:-translate-y-0.5 transform no-underline">
                     Register
