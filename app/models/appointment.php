@@ -8,7 +8,35 @@ class Appointment {
         $this->db = $pdo;
     }
 
-    // 1. FONCTION POUR INSERER UN RENDEZ-VOUS (UUID)
+    // 1. FONCTION POUR VÉRIFIER LA DISPONIBILITÉ DU CRÉNEAU (Délai d'1h)
+    public function isTimeSlotAvailable($datePrevue, $heurePrevue) {
+        try {
+            $timestampChoisi = strtotime("$datePrevue $heurePrevue");
+            $debutFenetre = date('Y-m-d H:i:s', $timestampChoisi - 3600); // - 1 heure
+            $finFenetre = date('Y-m-d H:i:s', $timestampChoisi + 3600);   // + 1 heure
+
+            $sql = "SELECT COUNT(*) as total FROM appointments 
+                    WHERE appointment_date = :date_jour 
+                    AND status != 'cancelled' 
+                    AND appointment_time BETWEEN :debut AND :fin";
+                    
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'date_jour' => $datePrevue,
+                'debut' => date('H:i:s', strtotime($debutFenetre)),
+                'fin' => date('H:i:s', strtotime($finFenetre))
+            ]);
+            
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Retourne true si le créneau est libre (0 rendez-vous dans la tranche d'1h)
+            return $result['total'] == 0;
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la vérification du créneau : " . $e->getMessage());
+        }
+    }
+
+    // 2. FONCTION POUR INSERER UN RENDEZ-VOUS (UUID)
     public function createAppointment($id, $user_id, $service_id, $date, $time) {
         try {
             $stmt = $this->db->prepare("INSERT INTO appointments 
@@ -27,7 +55,7 @@ class Appointment {
         }
     }
 
-    // 2. FONCTION POUR RECOUPER LES RESERVATIONS D'UN CLIENT (Pour son Dashboard)
+    // 3. FONCTION POUR RECOUPER LES RESERVATIONS D'UN CLIENT (Pour son Dashboard)
     public function getAppointmentsByUser($user_uuid) {
         try {
             $stmt = $this->db->prepare("SELECT a.*, s.name as service_name, s.price 

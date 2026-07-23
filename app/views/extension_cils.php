@@ -39,8 +39,8 @@ include 'header.php';
                 <div class="flex items-center justify-between pt-6 border-t border-[#FCD7CC]/30 mt-4">
                     <span class="text-lg font-black text-[#C87A65]">1 800 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Cils - Pose Naturelle (Cil à Cil)">
                         <input type="hidden" name="prix_soin" value="1800.00">
                         
@@ -63,8 +63,8 @@ include 'header.php';
                 <div class="flex items-center justify-between pt-6 border-t border-[#FCD7CC]/30 mt-4">
                     <span class="text-lg font-black text-[#C87A65]">2 500 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Cils - Volume Russe">
                         <input type="hidden" name="prix_soin" value="2500.00">
                         
@@ -87,8 +87,8 @@ include 'header.php';
                 <div class="flex items-center justify-between pt-6 border-t border-[#FCD7CC]/30 mt-4">
                     <span class="text-lg font-black text-[#C87A65]">1 350 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Cils - Remplissage (3 semaines)">
                         <input type="hidden" name="prix_soin" value="1350.00">
                         

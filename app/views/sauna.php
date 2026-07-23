@@ -44,8 +44,8 @@ include __DIR__ . '/header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">2 000 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Sauna - Instant Solo">
                         <input type="hidden" name="prix_soin" value="2000.00">
                         
@@ -73,8 +73,8 @@ include __DIR__ . '/header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">3 500 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Sauna - Rituel Harmonie">
                         <input type="hidden" name="prix_soin" value="3500.00">
                         
@@ -102,8 +102,8 @@ include __DIR__ . '/header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">5 500 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Sauna - Parenthèse Complice (Duo)">
                         <input type="hidden" name="prix_soin" value="5500.00">
                         
@@ -130,7 +130,7 @@ include __DIR__ . '/header.php';
             </div>
             <div class="text-center md:text-right">
                 <p class="text-xs uppercase tracking-widest text-[#C87A65] font-semibold mb-2">Des contre-indications ?</p>
-                <a href="index.php#contact" class="inline-block text-[#4A2E30] hover:text-[#C87A65] font-medium underline text-sm transition-colors">
+                <a href="index.php?url=home#contact" class="inline-block text-[#4A2E30] hover:text-[#C87A65] font-medium underline text-sm transition-colors">
                     Consulter notre équipe ou poser une question
                 </a>
             </div>
@@ -139,7 +139,7 @@ include __DIR__ . '/header.php';
 
     <!-- 4. BOUTON DE RETOUR RAPIDE -->
     <div class="text-center pb-12">
-        <a href="index.php" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C87A65] hover:text-[#A3523D] transition-colors group">
+        <a href="index.php?url=home" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C87A65] hover:text-[#A3523D] transition-colors group">
             <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
             Retour à l'accueil
         </a>

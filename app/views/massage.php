@@ -41,8 +41,8 @@ include __DIR__ . '/header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">10 000 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Le Relaxant Suédois">
                         <input type="hidden" name="prix_soin" value="10000.00">
                         
@@ -70,8 +70,8 @@ include __DIR__ . '/header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">12 500 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Rituel aux Pierres Chaudes">
                         <input type="hidden" name="prix_soin" value="12500.00">
                         
@@ -99,8 +99,8 @@ include __DIR__ . '/header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">11 000 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Évasion Aromatique">
                         <input type="hidden" name="prix_soin" value="11000.00">
                         
@@ -136,7 +136,7 @@ include __DIR__ . '/header.php';
 
     <!-- 4. BOUTON DE RETOUR RAPIDE -->
     <div class="text-center pb-12">
-        <a href="index.php" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C87A65] hover:text-[#A3523D] transition-colors group">
+        <a href="index.php?url=home" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C87A65] hover:text-[#A3523D] transition-colors group">
             <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
             Retour à l'accueil
         </a>

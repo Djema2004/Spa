@@ -44,8 +44,8 @@ include 'header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">750 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Épilation - Zones Visage">
                         <input type="hidden" name="prix_soin" value="750.00">
                         
@@ -73,8 +73,8 @@ include 'header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">1 500 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Épilation - Demi-Jambes ou Bras">
                         <input type="hidden" name="prix_soin" value="1500.00">
                         
@@ -102,8 +102,8 @@ include 'header.php';
                 <div class="p-6 pt-0 flex items-center justify-between border-t border-[#FCD7CC]/20 mt-4">
                     <span class="text-sm font-black text-[#C87A65]">3 500 gdes</span>
                     
-                    <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                    <form action="index.php?url=reservation/checkout" method="POST">
+                    <!-- Formulaire de réservation corrigé vers reservation/start -->
+                    <form action="index.php?url=reservation/start" method="POST">
                         <input type="hidden" name="service_nom" value="Épilation - Forfait Corps Complet">
                         <input type="hidden" name="prix_soin" value="3500.00">
                         
