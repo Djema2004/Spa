@@ -1,24 +1,41 @@
 <?php 
-// Inclusion de ton header global
-include __DIR__ . '/../header.php'; 
+// Inclusion de ton header global via le routeur
+include __DIR__ . '/../../views/header.php'; 
 ?>
 
 <div class="bg-[#FAF7F2] text-[#5C3A3C] min-h-screen flex flex-col justify-between font-sans">
 
     <main class="flex-grow max-w-6xl w-full mx-auto p-6 my-6">
         
+        <!-- En-tête du Tableau de Bord avec Profil & Bouton Déconnexion -->
         <div class="bg-white rounded-3xl p-8 shadow-sm border border-[#F5E6E8] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div>
-                <span class="text-xs font-bold uppercase tracking-wider text-[#A07173]">Espace Client</span>
-                <h1 class="text-3xl font-serif text-[#4A2E30] font-bold mt-1">Mon Espace Bien-être</h1>
-                <p class="text-sm text-gray-500 mt-1">Retrouvez ici vos rendez-vous et l'historique de vos moments de détente.</p>
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-[#FCECE7] text-[#C87A65] rounded-2xl flex items-center justify-center font-bold text-2xl border border-[#FCD7CC]/50 shadow-inner">
+                    <?= strtoupper(substr($_SESSION['user_name'] ?? 'C', 0, 1)) ?>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-[#A07173]">Espace Client</span>
+                    <h1 class="text-3xl font-serif text-[#4A2E30] font-bold mt-1">
+                        Bonjour, <?= htmlspecialchars($_SESSION['user_name'] ?? 'Client') ?>
+                    </h1>
+                    <p class="text-sm text-gray-500 mt-1">Retrouvez ici vos rendez-vous et l'historique de vos moments de détente.</p>
+                </div>
             </div>
-            <div>
-                <a href="../reservation.php" class="inline-flex items-center justify-center bg-[#8A5A5C] hover:bg-[#734A4C] text-white text-sm font-medium py-3 px-6 rounded-xl shadow-md transition-colors duration-200 no-underline">
+
+            <!-- Actions (Réserver + Déconnexion) -->
+            <div class="flex items-center gap-3 flex-wrap">
+                <a href="index.php?url=reservation/start" class="inline-flex items-center justify-center bg-[#8A5A5C] hover:bg-[#734A4C] text-white text-sm font-medium py-3 px-6 rounded-xl shadow-md transition-colors duration-200 no-underline">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                     Réserver un nouveau soin
+                </a>
+
+                <!-- Bouton de Déconnexion -->
+                <a href="index.php?url=logout" 
+                   class="inline-flex items-center gap-2 px-5 py-3 bg-[#FCECE7] hover:bg-[#FCD7CC] text-[#A3523D] font-medium text-sm rounded-xl transition-all duration-200 border border-[#FCD7CC] shadow-sm no-underline">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Déconnexion</span>
                 </a>
             </div>
         </div>
@@ -36,7 +53,7 @@ include __DIR__ . '/../header.php';
                         </svg>
                     </div>
                     <p class="text-gray-500 text-sm">Vous n'avez pas encore planifié de réservation.</p>
-                    <a href="../reservation.php" class="text-[#8A5A5C] hover:text-[#734A4C] text-sm font-medium mt-2 inline-block underline">Prendre mon premier rendez-vous</a>
+                    <a href="index.php?url=reservation/start" class="text-[#8A5A5C] hover:text-[#734A4C] text-sm font-medium mt-2 inline-block underline">Prendre mon premier rendez-vous</a>
                 </div>
             <?php else: ?>
                 <div class="overflow-x-auto">
@@ -94,6 +111,6 @@ include __DIR__ . '/../header.php';
 </div>
 
 <?php 
-// Inclusion de ton footer global
-include __DIR__ . '/../footer.php'; 
+// Inclusion de ton footer global via le routeur
+include __DIR__ . '/../../views/footer.php'; 
 ?>

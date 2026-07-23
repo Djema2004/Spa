@@ -16,8 +16,8 @@
             <p class="text-sm text-[#5C3A3C]/80 mt-2 font-light">Rejoignez notre oasis de sérénité dès aujourd'hui.</p>
         </div>
 
-        <!-- Formulaire -->
-        <form action="../controllers/registerformControl.php?action=addUser" method="POST" class="space-y-5 relative z-10">
+        <!-- Formulaire pointant vers la route de traitement du routeur -->
+        <form action="index.php?url=register/process" method="POST" class="space-y-5 relative z-10">
             
             <!-- Bloc Prénom & Nom -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -98,7 +98,7 @@
 
             <!-- Lien de bas de page -->
             <p class="text-xs text-center text-[#5C3A3C]/80 pt-2 font-light">
-                Vous avez déjà un compte ? <a href="login.php" class="text-[#4A2E30] font-bold hover:underline">Connectez-vous</a>
+                Vous avez déjà un compte ? <a href="index.php?url=login" class="text-[#4A2E30] font-bold hover:underline">Connectez-vous</a>
             </p>
         </form>
     </div>

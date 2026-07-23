@@ -38,8 +38,8 @@ include __DIR__ . '/header.php';
                     </p>
                 </div>
                 
-                <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                <form action="index.php?url=reservation/checkout" method="POST" class="mt-auto">
+                <!-- Formulaire vers reservation/start -->
+                <form action="index.php?url=reservation/start" method="POST" class="mt-auto">
                     <input type="hidden" name="service_nom" value="Manucure Rituel Douceur">
                     <input type="hidden" name="prix_soin" value="1350.00">
                     
@@ -68,8 +68,8 @@ include __DIR__ . '/header.php';
                     </p>
                 </div>
                 
-                <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                <form action="index.php?url=reservation/checkout" method="POST" class="mt-auto">
+                <!-- Formulaire vers reservation/start -->
+                <form action="index.php?url=reservation/start" method="POST" class="mt-auto">
                     <input type="hidden" name="service_nom" value="Pédicure Spa Sensorielle">
                     <input type="hidden" name="prix_soin" value="1650.00">
                     
@@ -98,8 +98,8 @@ include __DIR__ . '/header.php';
                     </p>
                 </div>
                 
-                <!-- Formulaire de réservation envoyé vers ReservationController::checkout -->
-                <form action="index.php?url=reservation/checkout" method="POST" class="mt-auto">
+                <!-- Formulaire vers reservation/start -->
+                <form action="index.php?url=reservation/start" method="POST" class="mt-auto">
                     <input type="hidden" name="service_nom" value="Beauté & Semi-Permanent">
                     <input type="hidden" name="prix_soin" value="1050.00">
                     

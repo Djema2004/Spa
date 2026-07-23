@@ -1,50 +1,56 @@
 <?php
+// app/controllers/ClientDashboardController.php
 
 class ClientDashboardController {
-    
+
     public function index() {
-        // 1. DÉMARRAGE DE LA SESSION ET SÉCURITÉ
+        // 1. Démarrage de la session
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Si l'utilisateur n'est pas connecté avec son UUID, éjection vers le login
-        if (!isset($_SESSION['user_uuid'])) {
-            header('Location: login.php');
+        // 2. Vérifier si l'utilisateur est connecté
+        if (!isset($_SESSION['user_uuid']) || empty($_SESSION['user_uuid'])) {
+            header('Location: index.php?url=login');
             exit();
         }
 
-        $user_uuid = $_SESSION['user_uuid'];
+        // Récupération de l'identifiant de l'utilisateur connecté
+        $user_id = $_SESSION['user_uuid'];
 
-        // 2. CONNEXION À LA BASE DE DONNÉES (À adapter selon ton système de connexion global)
+        // 3. Connexion à la base de données
         $host = 'localhost';
         $dbname = 'dbspa';
         $username = 'root';
         $password_db = '';
 
         try {
-            $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password_db);
+            $pdo = new PDO(
+                "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+                $username,
+                $password_db
+            );
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            die("Erreur de connexion dans le contrôleur : " . $e->getMessage());
+            die("Erreur de connexion à la base de données : " . $e->getMessage());
         }
 
-        // 3. CHARGEMENT DU MODÈLE ET RÉCUPÉRATION DES APPOINTMENTS
+        // 4. Chargement du modèle Appointment
         require_once __DIR__ . '/../models/appointment.php';
+
         $appointmentModel = new Appointment($pdo);
-        
+
         try {
-            // Récupère tous les rendez-vous de ce client spécifique
-            $appointments = $appointmentModel->getAppointmentsByUser($user_uuid);
+            $appointments = $appointmentModel->getAppointmentsByUser($user_id);
         } catch (Exception $e) {
             $appointments = [];
             $error_message = $e->getMessage();
         }
 
-        // Stocker la page actuelle pour la gestion des retours dynamiques (Annuler/Modifier)
-        $_SESSION['back_page'] = 'client/dashboard.php';
+        // 5. Mémoriser la page actuelle
+        $_SESSION['back_page'] = 'index.php?url=client-dashboard';
 
-        // 4. CHARGEMENT DE LA VUE CLIENT
+        // 6. Charger la vue
         require_once __DIR__ . '/../views/client/dashboard.php';
     }
 }

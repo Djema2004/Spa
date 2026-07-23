@@ -1,5 +1,12 @@
 <?php
 // index.php (à la racine du projet)
+
+// 0. Activation du tampon de sortie pour autoriser les redirections header() à tout moment
+ob_start();
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 // 1. Démarrage de la session globale pour tout le site
@@ -21,3 +28,6 @@ $url = isset($_GET['url']) ? trim($_GET['url'], '/') : 'home';
 
 // 5. Lancement de l'application
 $router->dispatch($url);
+
+
+// (Optionnel selon ton router) ob_end_flush();

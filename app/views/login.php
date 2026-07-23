@@ -1,70 +1,15 @@
 <?php
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$erreur = "";
-
-$host = 'localhost';
-$dbname = 'dbspa'; 
-$username = 'root'; 
-$password_db = ''; 
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password_db);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Erreur de connexion : " . $e->getMessage());
-}
-
-if (isset($_POST['btn_login'])) {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
-
-    if (!empty($email) && !empty($password)) {
-        
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
-        $stmt->execute(['email' => $email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user) {
-            
-            if (password_verify($password, $user['password'])) {
-                
-                // Stockage des données de l'utilisateur en session
-                $_SESSION['user_uuid'] = $user['id']; 
-                $_SESSION['firstname'] = $user['firstname']; 
-                $_SESSION['lastname']  = $user['lastname'];
-                $_SESSION['email']     = $user['email'];
-                $_SESSION['user_role'] = isset($user['role']) ? strtolower(trim($user['role'])) : 'client'; // Stockage du rôle
-                $_SESSION['logged_in'] = true; 
-
-                // REDIRECTION DYNAMIQUE SELON LE RÔLE
-                if ($_SESSION['user_role'] === 'admin') {
-                    // Si c'est un administrateur -> Redirection vers le dashboard admin
-                    header("Location: dashboard.php");
-                } else {
-                    // Si c'est un client -> Redirection vers la page de réservation
-                    header("Location: reservation.php");
-                }
-                exit(); 
-            } else {
-                $erreur = "Adresse e-mail ou mot de passe incorrect.";
-            }
-        } else {
-            $erreur = "Adresse e-mail ou mot de passe incorrect.";
-        }
-    } else {
-        $erreur = "Veuillez remplir tous les champs.";
-    }
-}
+// Récupération de l'erreur transmise par le contrôleur (si elle existe)
+$erreur = $error ?? '';
 
 include __DIR__ . '/header.php'; 
 ?>
 
 <main class="flex-1 flex items-center justify-center p-4 my-16 bg-[#FAF7F2] text-[#5C3A3C]">
-    
     <div id="login" class="w-full max-w-md bg-white p-8 sm:p-10 rounded-[2rem] shadow-xl shadow-[#FCD7CC]/20 border border-[#FCD7CC]/40 relative overflow-hidden">
         
         <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#FCECE7] rounded-full blur-2xl pointer-events-none"></div>
@@ -77,11 +22,12 @@ include __DIR__ . '/header.php';
 
         <?php if (!empty($erreur)): ?>
             <div class="mb-4 p-3 bg-[#BA4A43]/10 text-[#BA4A43] rounded-xl text-xs font-medium border border-[#BA4A43]/20 relative z-10">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <?php echo $erreur; ?>
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <?php echo htmlspecialchars($erreur); ?>
             </div>
         <?php endif; ?>
 
-        <form action="login.php" method="POST" class="space-y-5 relative z-10">
+        <!-- Le formulaire envoie les données vers le contrôleur via le routeur -->
+        <form action="index.php?url=login/process" method="POST" class="space-y-5 relative z-10">
             
             <div>
                 <label for="email" class="block text-sm font-semibold text-[#4A2E30] mb-1.5">Adresse e-mail</label>
@@ -115,7 +61,7 @@ include __DIR__ . '/header.php';
             </div>
 
             <p class="text-xs text-center text-[#5C3A3C]/80 pt-2 font-light">
-                Nouveau sur notre plateforme ? <a href="register.php" class="text-[#4A2E30] font-bold hover:underline">Créer un compte</a>
+                Nouveau sur notre plateforme ? <a href="index.php?url=register" class="text-[#4A2E30] font-bold hover:underline">Créer un compte</a>
             </p>
         </form>
     </div>
