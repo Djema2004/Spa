@@ -1,82 +1,86 @@
 <?php
-// app/models/usersModel.php
+// app/models/UsersModel.php
 
 class UsersModel {
-    private $pdo;
+    private $db;
 
     public function __construct() {
-        // Connexion BDD
-        $this->pdo = new PDO("mysql:host=localhost;dbname=dbspa;charset=utf8mb4", "root", "", [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
+        try {
+            $this->db = new PDO('mysql:host=localhost;dbname=dbspa;charset=utf8mb4', 'root', '');
+            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die("Erreur de connexion à la base de données : " . $e->getMessage());
+        }
     }
 
-    /**
-     * Authentifie un utilisateur par son email et son mot de passe
-     */
-    public function login($email, $password) {
-        $sql = "SELECT * FROM users WHERE email = :email LIMIT 1";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':email' => $email]);
-        $user = $stmt->fetch();
+    public function getAllUsers() {
+        $stmt = $this->db->query("SELECT * FROM utilisateurs ORDER BY prenom ASC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-        // Vérification si l'utilisateur existe et si le mot de passe correspond
+    // Metòd pou enskri yon nouvo itilizatè/kliyan otomatikman kòm 'client'
+    public function register($prenom, $nom, $email, $password) {
+        // Tcheke si imèl la deja egziste
+        $stmtCheck = $this->db->prepare("SELECT id FROM utilisateurs WHERE email = ?");
+        $stmtCheck->execute([$email]);
+        if ($stmtCheck->rowCount() > 0) {
+            return "Cet email est déjà utilisé.";
+        }
+
+        $id = sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        
+        // N ap mete role a sou 'client' ekzateman pou l ka monte nan paj itilizatè yo
+        $stmt = $this->db->prepare("INSERT INTO utilisateurs (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, 'client', 'Actif')");
+        
+        if ($stmt->execute([$id, $prenom, $nom, $email, $hashedPassword])) {
+            return $id;
+        }
+        return "Erreur lors de l'inscription.";
+    }
+
+    // Metòd pou jwenn yon itilizatè pa imèl li
+    public function getUserByEmail($email) {
+        $stmt = $this->db->prepare("SELECT * FROM utilisateurs WHERE email = ?");
+        $stmt->execute([$email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Metòd pou koneksyon an (login)
+    public function login($email, $password) {
+        $user = $this->getUserByEmail($email);
+        
         if ($user && password_verify($password, $user['password'])) {
             return $user;
         }
-
         return false;
     }
 
-    /**
-     * Récupère un utilisateur par son email
-     */
-    public function getUserByEmail($email) {
-        $sql = "SELECT * FROM users WHERE email = :email LIMIT 1";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':email' => $email]);
-        return $stmt->fetch();
+    public function createUser($prenom, $nom, $email, $password, $role) {
+        $id = sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        $stmt = $this->db->prepare("INSERT INTO utilisateurs (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, ?, 'Actif')");
+        return $stmt->execute([$id, $prenom, $nom, $email, $hashedPassword, $role]);
     }
 
-    /**
-     * Inscription d'un nouvel utilisateur avec firstname et lastname
-     */
-    public function register($firstname, $lastname, $email, $password) {
-        try {
-            // Vérifier si l'email existe déjà
-            if ($this->getUserByEmail($email)) {
-                return "Cet email est déjà utilisé.";
-            }
-
-            // Génération de l'UUID v4 pour l'ID utilisateur
-            $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-                mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-                mt_rand(0, 0xffff),
-                mt_rand(0, 0x0fff) | 0x4000,
-                mt_rand(0, 0x3fff) | 0x8000,
-                mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-            );
-
-            // Hachage sécurisé du mot de passe
-            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-            // Requête mise à jour avec firstname et lastname
-            $sql = "INSERT INTO users (id, firstname, lastname, email, password, role, created_at) 
-                    VALUES (:id, :firstname, :lastname, :email, :password, 'client', NOW())";
-            
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                ':id'        => $uuid,
-                ':firstname' => $firstname,
-                ':lastname'  => $lastname,
-                ':email'     => $email,
-                ':password'  => $hashedPassword
-            ]);
-
-            return $uuid; // Retourne l'ID généré
-        } catch (PDOException $e) {
-            return "Erreur lors de l'inscription : " . $e->getMessage();
-        }
+    public function deleteUser($id) {
+        $stmt = $this->db->prepare("DELETE FROM utilisateurs WHERE id = ?");
+        return $stmt->execute([$id]);
     }
 }

@@ -19,4 +19,10 @@ class Connect{
 
 // Définition de la constante globale Resend accessible partout après require_once
 define('RESEND_API_KEY', 're_f1zy6p4z_GQDhZJAWVwtjnUShc5rwZppA');
+
+// 🛠️ AJOUTE POU DEBLOKE CONTROLLER A:
+// Nou instansye klas la pou n rann $pdo ak $conn disponib pou controller yo
+$dbConnect = new Connect();
+$pdo = $dbConnect->pdo;
+$conn = $pdo;
 ?>
