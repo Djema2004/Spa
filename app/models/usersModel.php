@@ -14,11 +14,11 @@ class UsersModel {
     }
 
     public function getAllUsers() {
-        $stmt = $this->db->query("SELECT * FROM users ORDER BY prenom ASC");
+        $stmt = $this->db->query("SELECT * FROM users ORDER BY firstname ASC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function register($prenom, $nom, $email, $password) {
+    public function register($firstname, $lastname, $email, $password) {
         $stmtCheck = $this->db->prepare("SELECT id FROM users WHERE email = ?");
         $stmtCheck->execute([$email]);
         if ($stmtCheck->rowCount() > 0) {
@@ -36,9 +36,9 @@ class UsersModel {
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         
-        $stmt = $this->db->prepare("INSERT INTO users (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, 'client', 'Actif')");
+        $stmt = $this->db->prepare("INSERT INTO users (id, firstname, lastname, email, password, role) VALUES (?, ?, ?, ?, ?, 'client')");
         
-        if ($stmt->execute([$id, $prenom, $nom, $email, $hashedPassword])) {
+        if ($stmt->execute([$id, $firstname, $lastname, $email, $hashedPassword])) {
             return $id;
         }
         return "Erreur lors de l'inscription.";
@@ -59,7 +59,7 @@ class UsersModel {
         return false;
     }
 
-    public function createUser($prenom, $nom, $email, $password, $role) {
+    public function createUser($firstname, $lastname, $email, $password, $role) {
         $id = sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
             mt_rand(0, 0xffff), mt_rand(0, 0xffff),
@@ -70,8 +70,8 @@ class UsersModel {
         );
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $this->db->prepare("INSERT INTO users (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, ?, 'Actif')");
-        return $stmt->execute([$id, $prenom, $nom, $email, $hashedPassword, $role]);
+        $stmt = $this->db->prepare("INSERT INTO users (id, firstname, lastname, email, password, role) VALUES (?, ?, ?, ?, ?, ?)");
+        return $stmt->execute([$id, $firstname, $lastname, $email, $hashedPassword, $role]);
     }
 
     public function deleteUser($id) {
