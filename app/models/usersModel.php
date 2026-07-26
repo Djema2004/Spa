@@ -14,14 +14,12 @@ class UsersModel {
     }
 
     public function getAllUsers() {
-        $stmt = $this->db->query("SELECT * FROM utilisateurs ORDER BY prenom ASC");
+        $stmt = $this->db->query("SELECT * FROM users ORDER BY prenom ASC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Metòd pou enskri yon nouvo itilizatè/kliyan otomatikman kòm 'client'
     public function register($prenom, $nom, $email, $password) {
-        // Tcheke si imèl la deja egziste
-        $stmtCheck = $this->db->prepare("SELECT id FROM utilisateurs WHERE email = ?");
+        $stmtCheck = $this->db->prepare("SELECT id FROM users WHERE email = ?");
         $stmtCheck->execute([$email]);
         if ($stmtCheck->rowCount() > 0) {
             return "Cet email est déjà utilisé.";
@@ -38,8 +36,7 @@ class UsersModel {
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         
-        // N ap mete role a sou 'client' ekzateman pou l ka monte nan paj itilizatè yo
-        $stmt = $this->db->prepare("INSERT INTO utilisateurs (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, 'client', 'Actif')");
+        $stmt = $this->db->prepare("INSERT INTO users (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, 'client', 'Actif')");
         
         if ($stmt->execute([$id, $prenom, $nom, $email, $hashedPassword])) {
             return $id;
@@ -47,14 +44,12 @@ class UsersModel {
         return "Erreur lors de l'inscription.";
     }
 
-    // Metòd pou jwenn yon itilizatè pa imèl li
     public function getUserByEmail($email) {
-        $stmt = $this->db->prepare("SELECT * FROM utilisateurs WHERE email = ?");
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Metòd pou koneksyon an (login)
     public function login($email, $password) {
         $user = $this->getUserByEmail($email);
         
@@ -75,12 +70,12 @@ class UsersModel {
         );
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $this->db->prepare("INSERT INTO utilisateurs (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, ?, 'Actif')");
+        $stmt = $this->db->prepare("INSERT INTO users (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, ?, 'Actif')");
         return $stmt->execute([$id, $prenom, $nom, $email, $hashedPassword, $role]);
     }
 
     public function deleteUser($id) {
-        $stmt = $this->db->prepare("DELETE FROM utilisateurs WHERE id = ?");
+        $stmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
         return $stmt->execute([$id]);
     }
 }
