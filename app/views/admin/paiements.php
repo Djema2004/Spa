@@ -1,503 +1,297 @@
-<?php
-// views/admin/paiements.php
-// Données: $paiements, $clients, $rendez_vous
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPA DREAM - Paiements</title>
+    <title>Paiements - Spa Dream Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-color: #FAF5F5;
-            --sidebar-bg: #F5E6E6;
-            --primary-color: #8C5353;
-            --text-dark: #4A3B3B;
-            --card-bg: #FFFFFF;
-            --accent-color: #DDA7A5;
-            --danger-color: #C0392B;
-            --success-color: #2ECC71;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-dark); display: flex; min-height: 100vh; }
-
-        /* SIDEBAR */
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 25px 15px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid rgba(140, 83, 83, 0.1); position: fixed; height: 100vh; }
-        .sidebar-top { display: flex; flex-direction: column; gap: 30px; }
-        .logo-container { display: flex; align-items: center; gap: 12px; padding-left: 10px; }
-        .logo-container i { font-size: 24px; color: var(--primary-color); }
-        .logo-container h1 { font-size: 22px; font-weight: 700; color: var(--primary-color); letter-spacing: 1px; }
-        .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .menu-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-dark); text-decoration: none; font-size: 15px; font-weight: 500; border-radius: 8px; transition: all 0.3s; }
-        .menu-item a:hover { background-color: rgba(140, 83, 83, 0.08); color: var(--primary-color); }
-        .menu-item.active a { background-color: var(--primary-color); color: white; }
-        .menu-item.logout a { color: var(--danger-color); }
-        .menu-item.logout a:hover { background-color: rgba(192, 57, 43, 0.1); }
-
-        /* MAIN CONTENT */
-        .main-content { flex: 1; margin-left: 260px; padding: 40px; display: flex; flex-direction: column; gap: 30px; }
-        .header-section { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
-        .header-section h2 { font-size: 28px; color: var(--primary-color); }
-        .header-section p { color: #887474; font-size: 15px; }
-
-        .btn-add { background-color: var(--primary-color); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: background 0.3s; border: none; cursor: pointer; }
-        .btn-add:hover { background-color: #703f3f; }
-
-        .btn-action { padding: 8px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; border: none; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-view { background: #3498db; color: white; }
-        .btn-view:hover { background: #2980b9; }
-        .btn-edit { background: #f39c12; color: white; }
-        .btn-edit:hover { background: #e67e22; }
-        .btn-delete { background: var(--danger-color); color: white; }
-        .btn-delete:hover { background: #a93226; }
-
-        /* TABLE PAIEMENT */
-        .table-box { background-color: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02); border: 1px solid rgba(140, 83, 83, 0.05); overflow-x: auto; }
-        .pay-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .pay-table th { font-size: 13px; text-transform: uppercase; color: #887474; padding: 15px; border-bottom: 2px solid rgba(140, 83, 83, 0.1); background: rgba(140, 83, 83, 0.02); }
-        .pay-table td { padding: 15px; border-bottom: 1px solid rgba(140, 83, 83, 0.05); font-size: 14px; }
-        .pay-table tr:hover { background-color: rgba(140, 83, 83, 0.02); }
-        .pay-table tr:last-child td { border-bottom: none; }
-
-        .badge-montant { background-color: var(--success-color); color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; }
-        .badge-mode { background-color: rgba(140, 83, 83, 0.1); color: var(--primary-color); padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px; }
-        .badge-status { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; }
-        .badge-completed { background: rgba(46, 204, 113, 0.2); color: #27ae60; }
-        .badge-pending { background: rgba(241, 196, 15, 0.2); color: #f39c12; }
-
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
-        .modal-header h3 { color: var(--primary-color); font-size: 20px; }
-        .modal-header .close { font-size: 28px; cursor: pointer; color: #999; border: none; background: none; }
-        .modal-header .close:hover { color: var(--primary-color); }
-
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 8px; color: var(--primary-color); font-weight: 600; font-size: 13px; text-transform: uppercase; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(140, 83, 83, 0.1); }
-
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-        .btn-submit { background: var(--primary-color); color: white; padding: 12px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.3s; }
-        .btn-submit:hover { background: #703f3f; }
-        .btn-cancel { background: #ddd; color: #333; padding: 12px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-cancel:hover { background: #bbb; }
-
-        /* RECEIPT */
-        .receipt-container { background: white; padding: 30px; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 2px solid var(--primary-color); }
-        .receipt-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 15px; }
-        .receipt-header h2 { color: var(--primary-color); font-size: 24px; margin-bottom: 5px; }
-        .receipt-header p { color: #666; font-size: 13px; }
-        .receipt-body { margin-bottom: 20px; }
-        .receipt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        .receipt-row.total { font-weight: bold; background: rgba(140, 83, 83, 0.05); padding: 12px 8px; border-radius: 6px; font-size: 16px; }
-        .receipt-footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-
-        .print-btn { background: var(--primary-color); color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin: 20px auto; display: block; }
-        .print-btn:hover { background: #703f3f; }
-
-        @media print {
-            body { display: block; }
-            .sidebar, .main-content > .header-section, .main-content > .table-box, .btn-action, .modal { display: none !important; }
-            .receipt-container { border: none; margin: 0; padding: 0; }
-            .print-btn { display: none; }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 70px; }
-            .main-content { margin-left: 70px; padding: 20px; }
-            .form-row { grid-template-columns: 1fr; }
-            .header-section { flex-direction: column; align-items: flex-start; }
-            .pay-table { font-size: 12px; }
-        }
+        body { background: linear-gradient(135deg, #FAF7F2 0%, #F5E6E8 50%, #EFE3E5 100%); color: #5C3A3C; }
+        .glass-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(16px); }
+        .modal { display: none; align-items: center; justify-content: center; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; }
+        .modal.active { display: flex; }
     </style>
 </head>
-<body>
+<body class="flex min-h-screen">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="sidebar-top">
-            <div class="logo-container">
-                <i class="fa-solid fa-spa"></i>
-                <h1>SPA DREAM</h1>
+    <!-- 🌟 SIDEBAR MENU AK LYEN KI KONEKTE AK LÒT PAJ YO -->
+    <aside class="w-64 bg-white/70 border-r border-[#F5E6E8] h-screen sticky top-0 p-6 flex flex-col justify-between">
+        <div>
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-2xl bg-[#8A5A5C] flex items-center justify-center text-white text-xl shadow-lg shadow-[#8A5A5C]/20">
+                    <i class="fas fa-spa"></i>
+                </div>
+                <h1 class="text-xl font-bold font-serif text-[#4A2E30]">Spa Dream</h1>
             </div>
-            <ul class="menu-list">
-                <li class="menu-item">
-                    <a href="index.php?route=dashboard">
-                        <i class="fa-solid fa-chart-simple"></i> Tableau de Bord
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="index.php?route=clients">
-                        <i class="fa-solid fa-users"></i> Clients
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="index.php?route=prestations">
-                        <i class="fa-solid fa-sparkles"></i> Prestations
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="index.php?route=estheticiennes">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Esthéticiennes
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="index.php?route=rendez_vous">
-                        <i class="fa-solid fa-calendar-days"></i> Rendez-vous
-                    </a>
-                </li>
-                <li class="menu-item active">
-                    <a href="index.php?route=paiements">
-                        <i class="fa-solid fa-credit-card"></i> Paiements
-                    </a>
-                </li>
-            </ul>
+            <nav class="space-y-1 text-sm font-medium">
+                <a href="dashboard.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[#A07173] hover:bg-[#F5E6E8]/60 transition"><i class="fas fa-chart-pie w-5"></i> Tableau de bord</a>
+                <a href="users.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[#A07173] hover:bg-[#F5E6E8]/60 transition"><i class="fas fa-user-shield w-5"></i> Utilisateurs</a>
+                <a href="prestations.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[#A07173] hover:bg-[#F5E6E8]/60 transition"><i class="fas fa-spa w-5"></i> Prestations</a>
+                <a href="clients.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[#A07173] hover:bg-[#F5E6E8]/60 transition"><i class="fas fa-users w-5"></i> Clients</a>
+                <a href="estheticiennes.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[#A07173] hover:bg-[#F5E6E8]/60 transition"><i class="fas fa-user-tie w-5"></i> Esthéticiennes</a>
+                <a href="rendez_vous.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[#A07173] hover:bg-[#F5E6E8]/60 transition"><i class="fas fa-calendar-check w-5"></i> Rendez-vous</a>
+                <a href="coupons.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[#A07173] hover:bg-[#F5E6E8]/60 transition"><i class="fas fa-tag w-5"></i> Coupons</a>
+                <a href="paiements.php" class="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-[#8A5A5C] text-white shadow-md shadow-[#8A5A5C]/20"><i class="fas fa-credit-card w-5"></i> Paiements</a>
+            </nav>
         </div>
-        <ul class="menu-list">
-            <li class="menu-item logout">
-                <a href="logout.php" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');">
-                    <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
-                </a>
-            </li>
-        </ul>
-    </div>
+        <a href="logout.php" onclick="return confirm('Voulez-vous vraiment vous déconnecter ?');" class="flex items-center gap-3 px-4 py-2.5 text-rose-600 font-medium text-sm hover:bg-rose-50 rounded-2xl transition">
+            <i class="fas fa-sign-out-alt w-5"></i> Déconnexion
+        </a>
+    </aside>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <div class="header-section">
+    <!-- 📄 KONTNI PRENSIPAL -->
+    <main class="flex-1 p-8 space-y-6">
+        
+        <!-- HEADER SECTION -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h2>💳 Suivi des Paiements</h2>
-                <p>Enregistrez et contrôlez la comptabilité de l'établissement</p>
+                <h2 class="text-3xl font-bold font-serif text-[#4A2E30]">💳 Suivi des Paiements</h2>
+                <p class="text-xs text-[#A07173] mt-1">Gérez et enregistrez toutes les transactions de l'établissement</p>
             </div>
-            <button class="btn-add" onclick="openAddModal()">
-                <i class="fa-solid fa-plus"></i> Nouveau Paiement
+            <button onclick="openAddModal()" class="bg-[#8A5A5C] hover:bg-[#4A2E30] text-white px-5 py-2.5 rounded-2xl text-xs font-bold transition shadow-md shadow-[#8A5A5C]/20 flex items-center gap-2">
+                <i class="fas fa-plus"></i> Nouveau Paiement
             </button>
         </div>
 
-        <!-- TABLE PAIEMENTS -->
-        <div class="table-box">
-            <table class="pay-table">
+        <!-- 🔍 RECHÈCH AK FILTRAG -->
+        <div class="glass-card p-4 rounded-3xl border border-white/60">
+            <form class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="event.preventDefault();">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3.5 top-3 text-[#A07173] text-xs"></i>
+                    <input type="text" placeholder="Rechercher client ou ID..." class="w-full bg-white/80 border border-[#F5E6E8] rounded-xl pl-9 pr-4 py-2 text-xs text-[#5C3A3C] focus:outline-none focus:border-[#8A5A5C]">
+                </div>
+                <div>
+                    <select class="w-full bg-white/80 border border-[#F5E6E8] rounded-xl px-4 py-2 text-xs text-[#5C3A3C] focus:outline-none focus:border-[#8A5A5C]">
+                        <option value="">Tous les modes de paiement</option>
+                        <option value="Espèces">💵 Espèces</option>
+                        <option value="Carte Bancaire">💳 Carte Bancaire</option>
+                        <option value="MonCash">📱 MonCash</option>
+                        <option value="Virement">🏦 Virement</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" class="flex-1 bg-[#8A5A5C] text-white rounded-xl text-xs font-bold hover:bg-[#4A2E30] transition py-2">Filtrer</button>
+                    <button type="reset" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-300 transition flex items-center justify-center">Réinitialiser</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 📊 TABLO PAIEMENTS -->
+        <div class="glass-card p-6 rounded-3xl border border-white/60 overflow-x-auto">
+            <table class="w-full text-xs text-left">
                 <thead>
-                    <tr>
-                        <th>📋 ID Facture</th>
-                        <th>👤 Client</th>
-                        <th>📅 Date</th>
-                        <th>💰 Montant</th>
-                        <th>🔄 Mode</th>
-                        <th>✅ Statut</th>
-                        <th>⚙️ Actions</th>
+                    <tr class="text-[#A07173] border-b border-[#F5E6E8] uppercase tracking-wider font-bold">
+                        <th class="pb-3 px-2">ID Facture</th>
+                        <th class="pb-3 px-2">Client</th>
+                        <th class="pb-3 px-2">Rendez-vous</th>
+                        <th class="pb-3 px-2">Montant</th>
+                        <th class="pb-3 px-2">Mode</th>
+                        <th class="pb-3 px-2">Date</th>
+                        <th class="pb-3 px-2">Statut</th>
+                        <th class="pb-3 px-2 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php if (!empty($paiements)): ?>
-                        <?php foreach ($paiements as $pay): ?>
-                            <tr>
-                                <td><strong>#FAC-<?= str_pad($pay['id'], 4, '0', STR_PAD_LEFT) ?></strong></td>
-                                <td><?= htmlspecialchars($pay['client_nom'] ?? 'N/A') ?></td>
-                                <td><?= date('d/m/Y H:i', strtotime($pay['date_paiement'] ?? 'now')) ?></td>
-                                <td><span class="badge-montant"><?= number_format($pay['montant'] ?? 0, 2) ?> HTG</span></td>
-                                <td><span class="badge-mode"><?= htmlspecialchars($pay['mode_paiement'] ?? 'N/A') ?></span></td>
-                                <td>
-                                    <span class="badge-status <?= ($pay['statut'] ?? 'pending') === 'completed' ? 'badge-completed' : 'badge-pending' ?>">
-                                        <?= ($pay['statut'] ?? 'pending') === 'completed' ? '✓ Complété' : '⏳ En attente' ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="btn-action btn-view" onclick="viewReceipt(<?= json_encode($pay) ?>)" title="Voir reçu">
-                                        <i class="fa-solid fa-eye"></i> Reçu
-                                    </button>
-                                    <button class="btn-action btn-edit" onclick="openEditModal(<?= json_encode($pay) ?>)" title="Modifier">
-                                        <i class="fa-solid fa-edit"></i> Éditer
-                                    </button>
-                                    <button class="btn-action btn-delete" onclick="deletePaiement(<?= $pay['id'] ?>)" title="Supprimer">
-                                        <i class="fa-solid fa-trash"></i> Supprimer
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="7" style="text-align: center; color: #887474; padding: 40px;">
-                                <i class="fa-solid fa-inbox" style="font-size: 40px; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
-                                Aucun paiement enregistré pour le moment.
-                            </td>
-                        </tr>
-                    <?php endif; ?>
+                <tbody class="divide-y divide-[#F5E6E8]">
+                    <tr class="hover:bg-white/40 transition">
+                        <td class="py-3 px-2 font-bold text-[#4A2E30]">#FAC-0001</td>
+                        <td class="py-3 px-2 font-bold">Jean Pierre</td>
+                        <td class="py-3 px-2 text-gray-600">#RDV-12 (Soin du visage)</td>
+                        <td class="py-3 px-2 font-black text-emerald-700">2,500.00 HTG</td>
+                        <td class="py-3 px-2">
+                            <span class="px-2.5 py-1 rounded-lg bg-[#F5E6E8] text-[#8A5A5C] font-bold text-[10px]">MonCash</span>
+                        </td>
+                        <td class="py-3 px-2 text-gray-500">23/07/2026 14:30</td>
+                        <td class="py-3 px-2">
+                            <span class="px-2 py-1 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-bold">✓ Complété</span>
+                        </td>
+                        <td class="py-3 px-2 text-right space-x-1">
+                            <button onclick="viewReceipt({id:'FAC-0001', client:'Jean Pierre', mode:'MonCash', date:'23/07/2026 14:30', montant:'2500.00'})" class="bg-sky-500 hover:bg-sky-600 text-white p-1.5 rounded-lg text-xs transition" title="Voir reçu">
+                                <i class="fas fa-eye"></i> Reçu
+                            </button>
+                            <button onclick="openEditModal({id:'1', client_id:'1', montant:'2500', mode:'MonCash', date:'2026-07-23T14:30', statut:'completed'})" class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 rounded-lg text-xs transition" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="alert('Suppression démo');" class="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-lg text-xs transition inline-block" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-white/40 transition">
+                        <td class="py-3 px-2 font-bold text-[#4A2E30]">#FAC-0002</td>
+                        <td class="py-3 px-2 font-bold">Marie Carmel</td>
+                        <td class="py-3 px-2 text-gray-400">Paiement Direct</td>
+                        <td class="py-3 px-2 font-black text-emerald-700">4,000.00 HTG</td>
+                        <td class="py-3 px-2">
+                            <span class="px-2.5 py-1 rounded-lg bg-[#F5E6E8] text-[#8A5A5C] font-bold text-[10px]">Espèces</span>
+                        </td>
+                        <td class="py-3 px-2 text-gray-500">22/07/2026 10:15</td>
+                        <td class="py-3 px-2">
+                            <span class="px-2 py-1 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold">⏳ En attente</span>
+                        </td>
+                        <td class="py-3 px-2 text-right space-x-1">
+                            <button onclick="viewReceipt({id:'FAC-0002', client:'Marie Carmel', mode:'Espèces', date:'22/07/2026 10:15', montant:'4000.00'})" class="bg-sky-500 hover:bg-sky-600 text-white p-1.5 rounded-lg text-xs transition" title="Voir reçu">
+                                <i class="fas fa-eye"></i> Reçu
+                            </button>
+                            <button onclick="openEditModal({id:'2', client_id:'2', montant:'4000', mode:'Espèces', date:'2026-07-22T10:15', statut:'pending'})" class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 rounded-lg text-xs transition" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="alert('Suppression démo');" class="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-lg text-xs transition inline-block" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
-    </div>
+    </main>
 
-    <!-- ✅ MODAL AJOUTER PAIEMENT -->
+    <!-- ➕ MODAL AJOUTER PAIEMENT -->
     <div id="modalAjouter" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-plus"></i> Ajouter un Paiement</h3>
-                <button class="close" onclick="closeModal('modalAjouter')">&times;</button>
+        <div class="bg-white p-6 rounded-3xl shadow-xl w-full max-w-md border border-[#F5E6E8] space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-serif font-bold text-lg text-[#4A2E30]"><i class="fas fa-plus mr-1"></i> Nouveau Paiement</h3>
+                <button onclick="closeModal('modalAjouter')" class="text-gray-400 hover:text-gray-600 text-lg">&times;</button>
             </div>
-            <form method="POST" action="index.php?route=store_paiement">
-                <div class="form-group">
-                    <label>Sélectionner un Client</label>
-                    <select name="client_id" required>
+            <form onsubmit="event.preventDefault(); closeModal('modalAjouter');" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-[#A07173] mb-1">Sélectionner Client</label>
+                    <select required class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
                         <option value="">-- Choisir un client --</option>
-                        <?php if (!empty($clients)): ?>
-                            <?php foreach ($clients as $client): ?>
-                                <option value="<?= $client['id'] ?>">
-                                    <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                        <option value="1">Jean Pierre</option>
+                        <option value="2">Marie Carmel</option>
                     </select>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Montant (HTG)</label>
-                        <input type="number" name="montant" step="0.01" placeholder="0.00" required>
+                <div>
+                    <label class="block text-xs font-bold text-[#A07173] mb-1">Lier à un Rendez-vous (Optionnel)</label>
+                    <select class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                        <option value="">-- Sans Rendez-vous (Paiement Direct) --</option>
+                        <option value="12">RDV #12 - Jean Pierre (Soin du visage)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Montant (HTG)</label>
+                        <input type="number" step="0.01" required placeholder="0.00" class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
                     </div>
-                    <div class="form-group">
-                        <label>Date de Paiement</label>
-                        <input type="datetime-local" name="date_paiement" required>
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Mode de paiement</label>
+                        <select required class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                            <option value="Espèces">Espèces</option>
+                            <option value="Carte Bancaire">Carte Bancaire</option>
+                            <option value="MonCash">MonCash</option>
+                            <option value="Virement">Virement</option>
+                        </select>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Mode de Paiement</label>
-                    <select name="mode_paiement" required>
-                        <option value="">-- Sélectionner --</option>
-                        <option value="Espèces">💵 Espèces</option>
-                        <option value="Carte Bancaire">💳 Carte Bancaire</option>
-                        <option value="Virement">🏦 Virement</option>
-                        <option value="Chèque">📄 Chèque</option>
-                        <option value="Mobile Money">📱 Mobile Money</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Date</label>
+                        <input type="datetime-local" required class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Statut</label>
+                        <select class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                            <option value="completed">Complété</option>
+                            <option value="pending">En attente</option>
+                        </select>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Statut</label>
-                    <select name="statut" required>
-                        <option value="pending">⏳ En attente</option>
-                        <option value="completed">✅ Complété</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Description (Optionnel)</label>
-                    <textarea name="description" placeholder="Notes supplémentaires..." rows="3"></textarea>
-                </div>
-
-                <button type="submit" class="btn-submit">
-                    <i class="fa-solid fa-save"></i> Enregistrer Paiement
-                </button>
-                <button type="button" class="btn-cancel" onclick="closeModal('modalAjouter')">
-                    Annuler
-                </button>
+                <button type="submit" class="w-full bg-[#8A5A5C] text-white py-2.5 rounded-xl text-xs font-bold hover:bg-[#4A2E30] transition mt-2">Enregistrer Paiement</button>
             </form>
         </div>
     </div>
 
     <!-- ✏️ MODAL MODIFIER PAIEMENT -->
     <div id="modalModifier" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-edit"></i> Modifier le Paiement</h3>
-                <button class="close" onclick="closeModal('modalModifier')">&times;</button>
+        <div class="bg-white p-6 rounded-3xl shadow-xl w-full max-w-md border border-[#F5E6E8] space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-serif font-bold text-lg text-[#4A2E30]"><i class="fas fa-edit mr-1"></i> Modifier Paiement</h3>
+                <button onclick="closeModal('modalModifier')" class="text-gray-400 hover:text-gray-600 text-lg">&times;</button>
             </div>
-            <form method="POST" action="index.php?route=update_paiement">
-                <input type="hidden" name="id" id="edit_id">
-
-                <div class="form-group">
-                    <label>Client</label>
-                    <select name="client_id" id="edit_client_id" required>
-                        <option value="">-- Choisir un client --</option>
-                        <?php if (!empty($clients)): ?>
-                            <?php foreach ($clients as $client): ?>
-                                <option value="<?= $client['id'] ?>">
-                                    <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+            <form onsubmit="event.preventDefault(); closeModal('modalModifier');" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-[#A07173] mb-1">Client</label>
+                    <select id="edit_client_id" required class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                        <option value="1">Jean Pierre</option>
+                        <option value="2">Marie Carmel</option>
                     </select>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Montant (HTG)</label>
-                        <input type="number" name="montant" id="edit_montant" step="0.01" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Montant (HTG)</label>
+                        <input type="number" step="0.01" id="edit_montant" required class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
                     </div>
-                    <div class="form-group">
-                        <label>Date de Paiement</label>
-                        <input type="datetime-local" name="date_paiement" id="edit_date" required>
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Mode</label>
+                        <select id="edit_mode" required class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                            <option value="Espèces">Espèces</option>
+                            <option value="Carte Bancaire">Carte Bancaire</option>
+                            <option value="MonCash">MonCash</option>
+                            <option value="Virement">Virement</option>
+                        </select>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Mode de Paiement</label>
-                    <select name="mode_paiement" id="edit_mode" required>
-                        <option value="Espèces">💵 Espèces</option>
-                        <option value="Carte Bancaire">💳 Carte Bancaire</option>
-                        <option value="Virement">🏦 Virement</option>
-                        <option value="Chèque">📄 Chèque</option>
-                        <option value="Mobile Money">📱 Mobile Money</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Date</label>
+                        <input type="datetime-local" id="edit_date" required class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#A07173] mb-1">Statut</label>
+                        <select id="edit_statut" class="w-full bg-white border border-[#F5E6E8] rounded-xl px-3 py-2 text-xs text-[#5C3A3C]">
+                            <option value="completed">Complété</option>
+                            <option value="pending">En attente</option>
+                        </select>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Statut</label>
-                    <select name="statut" id="edit_statut" required>
-                        <option value="pending">⏳ En attente</option>
-                        <option value="completed">✅ Complété</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea name="description" id="edit_description" rows="3"></textarea>
-                </div>
-
-                <button type="submit" class="btn-submit">
-                    <i class="fa-solid fa-save"></i> Mettre à jour
-                </button>
-                <button type="button" class="btn-cancel" onclick="closeModal('modalModifier')">
-                    Annuler
-                </button>
+                <button type="submit" class="w-full bg-[#8A5A5C] text-white py-2.5 rounded-xl text-xs font-bold hover:bg-[#4A2E30] transition mt-2">Mettre à jour</button>
             </form>
         </div>
     </div>
 
-    <!-- 📄 MODAL REÇU -->
+    <!-- 🧾 MODAL REÇU -->
     <div id="modalReceipt" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-receipt"></i> Reçu de Paiement</h3>
-                <button class="close" onclick="closeModal('modalReceipt')">&times;</button>
+        <div class="bg-white p-6 rounded-3xl shadow-xl w-full max-w-sm border border-[#F5E6E8] space-y-4">
+            <div class="text-center border-b pb-3">
+                <h3 class="font-serif font-bold text-xl text-[#4A2E30]">🏨 SPA DREAM</h3>
+                <p class="text-[10px] text-[#A07173]">Reçu de Paiement Officiel</p>
             </div>
-
-            <div id="receiptContent" class="receipt-container">
-                <div class="receipt-header">
-                    <h2>🏨 SPA DREAM</h2>
-                    <p>Reçu de Paiement</p>
-                </div>
-
-                <div class="receipt-body">
-                    <div class="receipt-row">
-                        <span><strong>Numéro Facture:</strong></span>
-                        <span id="receipt_id"></span>
-                    </div>
-                    <div class="receipt-row">
-                        <span><strong>Client:</strong></span>
-                        <span id="receipt_client"></span>
-                    </div>
-                    <div class="receipt-row">
-                        <span><strong>Date:</strong></span>
-                        <span id="receipt_date"></span>
-                    </div>
-                    <div class="receipt-row">
-                        <span><strong>Mode:</strong></span>
-                        <span id="receipt_mode"></span>
-                    </div>
-                    <div class="receipt-row">
-                        <span><strong>Statut:</strong></span>
-                        <span id="receipt_status"></span>
-                    </div>
-                    <div class="receipt-row total">
-                        <span>Montant Total:</span>
-                        <span id="receipt_montant"></span>
-                    </div>
-                    <div class="receipt-row">
-                        <span><strong>Notes:</strong></span>
-                        <span id="receipt_notes"></span>
-                    </div>
-                </div>
-
-                <div class="receipt-footer">
-                    <p>Merci de votre confiance!</p>
-                    <p style="font-size: 11px; margin-top: 10px;">
-                        <?= date('d/m/Y H:i') ?>
-                    </p>
-                </div>
+            <div class="space-y-2 text-xs">
+                <div class="flex justify-between"><span class="font-bold">N° Facture:</span><span id="rc_id" class="text-gray-600"></span></div>
+                <div class="flex justify-between"><span class="font-bold">Client:</span><span id="rc_client" class="text-gray-600"></span></div>
+                <div class="flex justify-between"><span class="font-bold">Mode:</span><span id="rc_mode" class="text-gray-600"></span></div>
+                <div class="flex justify-between"><span class="font-bold">Date:</span><span id="rc_date" class="text-gray-600"></span></div>
+                <div class="flex justify-between border-t pt-2 text-sm"><span class="font-bold text-[#4A2E30]">Total Payé:</span><span id="rc_montant" class="font-black text-emerald-700"></span></div>
             </div>
-
-            <button class="print-btn" onclick="printReceipt()">
-                <i class="fa-solid fa-print"></i> Imprimer
-            </button>
+            <div class="flex gap-2 pt-3">
+                <button onclick="window.print()" class="flex-1 bg-[#8A5A5C] text-white py-2 rounded-xl text-xs font-bold hover:bg-[#4A2E30] transition"><i class="fas fa-print mr-1"></i> Imprimer</button>
+                <button onclick="closeModal('modalReceipt')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-300 transition">Fermer</button>
+            </div>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
     <script>
-        // ✅ OUVRIR MODAL AJOUTER
-        function openAddModal() {
-            document.getElementById('modalAjouter').style.display = 'flex';
-        }
+        function openAddModal() { document.getElementById('modalAjouter').classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // ✏️ OUVRIR MODAL MODIFIER
         function openEditModal(data) {
-            document.getElementById('edit_id').value = data.id;
             document.getElementById('edit_client_id').value = data.client_id;
             document.getElementById('edit_montant').value = data.montant;
-            document.getElementById('edit_date').value = data.date_paiement.replace(' ', 'T');
-            document.getElementById('edit_mode').value = data.mode_paiement;
-            document.getElementById('edit_statut').value = data.statut || 'pending';
-            document.getElementById('edit_description').value = data.description || '';
-
-            document.getElementById('modalModifier').style.display = 'flex';
+            document.getElementById('edit_mode').value = data.mode;
+            document.getElementById('edit_statut').value = data.statut;
+            document.getElementById('edit_date').value = data.date;
+            document.getElementById('modalModifier').classList.add('active');
         }
 
-        // 📄 VOIR REÇU
         function viewReceipt(data) {
-            document.getElementById('receipt_id').textContent = '#FAC-' + String(data.id).padStart(4, '0');
-            document.getElementById('receipt_client').textContent = data.client_nom;
-            document.getElementById('receipt_date').textContent = new Date(data.date_paiement).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            document.getElementById('receipt_mode').textContent = data.mode_paiement;
-            document.getElementById('receipt_status').textContent = (data.statut === 'completed') ? '✅ Complété' : '⏳ En attente';
-            document.getElementById('receipt_montant').textContent = parseFloat(data.montant).toFixed(2) + ' HTG';
-            document.getElementById('receipt_notes').textContent = data.description || 'Aucune note';
-
-            document.getElementById('modalReceipt').style.display = 'flex';
+            document.getElementById('rc_id').textContent = '#' + data.id;
+            document.getElementById('rc_client').textContent = data.client;
+            document.getElementById('rc_mode').textContent = data.mode;
+            document.getElementById('rc_date').textContent = data.date;
+            document.getElementById('rc_montant').textContent = data.montant + ' HTG';
+            document.getElementById('modalReceipt').classList.add('active');
         }
-
-        // 🗑️ SUPPRIMER PAIEMENT
-        function deletePaiement(id) {
-            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce paiement ?')) {
-                window.location.href = 'index.php?route=delete_paiement&id=' + id;
-            }
-        }
-
-        // ❌ FERMER MODAL
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // 🖨️ IMPRIMER REÇU
-        function printReceipt() {
-            window.print();
-        }
-
-        // Fermer modal en cliquant dehors
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-        });
-
-        // Set today's date in paiement form
-        document.addEventListener('DOMContentLoaded', () => {
-            const now = new Date().toISOString().slice(0, 16);
-            const dateInputs = document.querySelectorAll('input[type="datetime-local"]');
-            dateInputs.forEach(input => {
-                if (!input.value) input.value = now;
-            });
-        });
     </script>
 </body>
 </html>

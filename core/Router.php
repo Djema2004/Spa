@@ -19,16 +19,29 @@ class Router {
             $controllerName = $this->routes[$url]['controller'];
             $actionName     = $this->routes[$url]['action'];
 
-            $controllerPath = __DIR__ . '/../app/controllers/' . $controllerName . '.php';
+            // Tcheke plizyè chemen posib pou kontwolè a
+            $possiblePaths = [
+                __DIR__ . '/../app/controllers/' . $controllerName . '.php',
+                __DIR__ . '/../app/controllers/admin/' . $controllerName . '.php',
+                __DIR__ . '/../app/Controllers/' . $controllerName . '.php'
+            ];
 
-            if (file_exists($controllerPath)) {
+            $controllerPath = null;
+            foreach ($possiblePaths as $path) {
+                if (file_exists($path)) {
+                    $controllerPath = $path;
+                    break;
+                }
+            }
+
+            if ($controllerPath && file_exists($controllerPath)) {
                 require_once $controllerPath;
 
                 if (class_exists($controllerName)) {
                     $controller = new $controllerName();
 
                     if (method_exists($controller, $actionName)) {
-                        // Appelle la méthode (ex: checkout)
+                        // Appelle la méthode
                         $controller->$actionName();
                         return;
                     } else {
@@ -38,7 +51,7 @@ class Router {
                     die("Erreur : La classe <b>{$controllerName}</b> est introuvable.");
                 }
             } else {
-                die("Erreur : Le fichier <b>{$controllerPath}</b> est introuvable.");
+                die("Erreur : Le fichier contrôleur pour <b>{$controllerName}</b> est introuvable.");
             }
         }
 

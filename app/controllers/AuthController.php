@@ -1,7 +1,8 @@
 <?php
 // app/controllers/AuthController.php
 
-require_once dirname(__DIR__) . '/models/usersModel.php';
+// Rann non fichye a kòrèk pou li matche egzakteman ak fason l ye nan dosye models yo
+require_once dirname(__DIR__) . '/models/UsersModel.php';
 
 class AuthController {
 
@@ -41,6 +42,7 @@ class AuthController {
                 if ($password === $password_confirm) {
                     $userModel = new UsersModel(); 
                     
+                    // Asire w modèl la anrejistre kliyan an ak wòl 'client' pou l parèt nan paj itilizatè yo
                     $result = $userModel->register($firstname, $lastname, $email, $password);
 
                     if ($result === true || is_numeric($result) || is_string($result)) {
@@ -145,7 +147,8 @@ class AuthController {
         session_unset();
         session_destroy();
         
-        header("Location: index.php?url=home");
+        // Redirige l'utilisateur vers la page de connexion
+        header("Location: index.php?url=login");
         exit();
     }
 }

@@ -8,9 +8,9 @@ class Database {
 
     // Le constructeur est privé pour empêcher d'instancier plusieurs fois la classe directement
     private function __construct() {
-        // Configuration de la base de données - À AJUSTER AVEC TES INFOS
+        // Configuration de la base de données - Mis à jour avec 'dbspa'
         $host     = 'localhost';
-        $dbname   = 'nom_de_ta_base'; // Remplace par le nom de ta base de données (ex: spa_db)
+        $dbname   = 'dbspa'; // <--- Chanje la a soti nan nom_de_ta_base ale nan dbspa
         $username = 'root';          // Ton identifiant (souvent root)
         $password = '';              // Ton mot de passe (vide sur XAMPP/Wamp par défaut)
         $charset  = 'utf8mb4';
