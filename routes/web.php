@@ -45,7 +45,7 @@ return [
     'reservation/confirmer'                    => ['controller' => 'ReservationController', 'action' => 'confirmer'],
     'confirm-reservation-process'              => ['controller' => 'ReservationController', 'action' => 'confirmationProcess'],
 
-    // ⚙️ WOUT ADMIN YO
+    // ⚙️ WOUT ADMIN YO (Itilizatè)
     'users'                                    => ['controller' => 'UserController', 'action' => 'index'],
     'users.php'                                => ['controller' => 'UserController', 'action' => 'index'],
     'utilisateurs'                             => ['controller' => 'UserController', 'action' => 'index'],
@@ -53,6 +53,14 @@ return [
     'app/views/admin/utilisateurs'             => ['controller' => 'UserController', 'action' => 'index'],
     'app/views/admin/utilisateurs.php'         => ['controller' => 'UserController', 'action' => 'index'],
     
+    // 🛡️ Wout espesyal pou Admin & Admins
+    'admins'                                   => ['controller' => 'AdminDashboardController', 'action' => 'index'],
+    'admins.php'                               => ['controller' => 'AdminDashboardController', 'action' => 'index'],
+    'admin'                                    => ['controller' => 'AdminDashboardController', 'action' => 'index'],
+    'admin.php'                                => ['controller' => 'AdminDashboardController', 'action' => 'index'],
+    'app/views/admin/admin'                    => ['controller' => 'AdminDashboardController', 'action' => 'index'],
+    'app/views/admin/admin.php'                => ['controller' => 'AdminDashboardController', 'action' => 'index'],
+
     // 🛠️ Prestations (Lis, Edit, Modifye)
     'prestations'                              => ['controller' => 'PrestationController', 'action' => 'index'],
     'prestations.php'                          => ['controller' => 'PrestationController', 'action' => 'index'],
@@ -99,7 +107,7 @@ return [
     'supprimer'                                => ['controller' => 'RendezVousController', 'action' => 'delete'],
     'supprimer.php'                            => ['controller' => 'RendezVousController', 'action' => 'delete'],
     'app/views/admin/supprimer'                => ['controller' => 'RendezVousController', 'action' => 'delete'],
-    'app/views/admin/supprimer.php'            => ['controller' => 'RendezVousController', 'action' => 'delete'],
+    'app/views/admin/supprimer.php'            => ['controller' => 'Rendez_VousController', 'action' => 'delete'],
     'rendezvous/delete'                        => ['controller' => 'RendezVousController', 'action' => 'delete'],
     'rendez_vous/delete'                       => ['controller' => 'RendezVousController', 'action' => 'delete'],
     'rendezvous/supprimer'                     => ['controller' => 'RendezVousController', 'action' => 'delete'],

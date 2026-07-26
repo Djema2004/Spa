@@ -1,11 +1,10 @@
 <?php
-// app/views/admin/utilisateurs.php
+// app/views/admin/users.php
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Si paj la pa ranpli pa UserController a, nou fè kòd orijinal la mache
 if (!isset($users)) {
     try {
         $db = new PDO('mysql:host=localhost;dbname=dbspa;charset=utf8mb4', 'root', '');
@@ -20,7 +19,7 @@ if (!isset($users)) {
     // --- 1. SUPPRESSION ---
     if (isset($_GET['delete'])) {
         $id_to_delete = $_GET['delete'];
-        $stmt = $db->prepare("DELETE FROM utilisateurs WHERE id = ?");
+        $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
         if ($stmt->execute([$id_to_delete])) {
             $message = "Utilisateur supprimé avec succès !";
         }
@@ -49,7 +48,7 @@ if (!isset($users)) {
 
                 $hash = password_hash($mot_de_passe, PASSWORD_BCRYPT);
 
-                $stmt = $db->prepare("INSERT INTO utilisateurs (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, ?, 'Actif')");
+                $stmt = $db->prepare("INSERT INTO users (id, prenom, nom, email, password, role, statut) VALUES (?, ?, ?, ?, ?, ?, 'Actif')");
                 if ($stmt->execute([$id, $prenom, $nom, $email, $hash, $role])) {
                     $message = "Utilisateur ajouté avec succès !";
                 }
@@ -65,10 +64,10 @@ if (!isset($users)) {
             if (!empty($id) && !empty($prenom) && !empty($nom) && !empty($email)) {
                 if (!empty($mot_de_passe)) {
                     $hash = password_hash($mot_de_passe, PASSWORD_BCRYPT);
-                    $stmt = $db->prepare("UPDATE utilisateurs SET prenom = ?, nom = ?, email = ?, password = ?, role = ? WHERE id = ?");
+                    $stmt = $db->prepare("UPDATE users SET prenom = ?, nom = ?, email = ?, password = ?, role = ? WHERE id = ?");
                     $success = $stmt->execute([$prenom, $nom, $email, $hash, $role, $id]);
                 } else {
-                    $stmt = $db->prepare("UPDATE utilisateurs SET prenom = ?, nom = ?, email = ?, role = ? WHERE id = ?");
+                    $stmt = $db->prepare("UPDATE users SET prenom = ?, nom = ?, email = ?, role = ? WHERE id = ?");
                     $success = $stmt->execute([$prenom, $nom, $email, $role, $id]);
                 }
 
@@ -79,17 +78,16 @@ if (!isset($users)) {
         }
     }
 
-    // --- 3. RÉCUPÉRATION DES DONNÉES (TOUT MOUN: Admin, Gérant, Réceptionniste, Client) ---
+    // --- 3. RÉCUPÉRATION DES DONNÉES ---
     $userToEdit = null;
     if (isset($_GET['edit'])) {
         $id_to_edit = $_GET['edit'];
-        $stmtEdit = $db->prepare("SELECT * FROM utilisateurs WHERE id = ?");
+        $stmtEdit = $db->prepare("SELECT * FROM users WHERE id = ?");
         $stmtEdit->execute([$id_to_edit]);
         $userToEdit = $stmtEdit->fetch(PDO::FETCH_ASSOC);
     }
 
-    // N ap pran tout moun san okenn filtè sou wòl la, pou kliyan yo ka parèt tou
-    $stmt = $db->query("SELECT * FROM utilisateurs ORDER BY prenom ASC");
+    $stmt = $db->query("SELECT * FROM users ORDER BY prenom ASC");
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     if (!$users) {
         $users = [];
@@ -131,20 +129,20 @@ if (!isset($users)) {
             <nav class="space-y-1">
                 <?php 
                 $menu = [
-                    ['Tableau de bord', 'fa-chart-pie', 'dashboard.php'],
-                    ['Utilisateurs', 'fa-user-shield', 'utilisateurs.php'],
-                    ['Prestations', 'fa-spa', 'prestations.php'],
-                    ['Clients', 'fa-users', 'clients.php'],
-                    ['Esthéticiennes', 'fa-user-tie', 'estheticiennes.php'],
-                    ['Rendez-vous', 'fa-calendar-check', 'rendezvous.php'],
-                    ['Coupons', 'fa-tag', 'coupons.php'],
-                    ['Paiements', 'fa-wallet', 'paiements.php']
+                    ['Tableau de bord', 'fa-chart-pie', '/admin/dashboard'],
+                    ['Users', 'fa-user-shield', '/admin/users'],
+                    ['Prestations', 'fa-spa', '/admin/prestations'],
+                    ['Clients', 'fa-users', '/admin/clients'],
+                    ['Esthéticiennes', 'fa-user-tie', '/admin/estheticiennes'],
+                    ['Rendez-vous', 'fa-calendar-check', '/admin/rendez_vous'],
+                    ['Coupons', 'fa-tag', '/admin/coupons'],
+                    ['Paiements', 'fa-wallet', '/admin/paiements']
                 ];
                 foreach($menu as $m): 
-                    $isActive = ($m[0] == 'Utilisateurs');
+                    $isActive = ($m[0] == 'Users');
                 ?>
                     <a href="<?php echo $m[2]; ?>" 
-                       class="flex items-center gap-3.5 px-4 py-3 rounded-2xl transition font-medium text-sm <?php echo $isActive ? 'bg-[#C6856F] text-white shadow-md shadow-[#C6856F]/30' : 'text-[#8C6B68] hover:bg-[#EADBD4]/40 hover:text-[#6B4C4A]'; ?>">
+                        class="flex items-center gap-3.5 px-4 py-3 rounded-2xl transition font-medium text-sm <?php echo $isActive ? 'bg-[#C6856F] text-white shadow-md shadow-[#C6856F]/30' : 'text-[#8C6B68] hover:bg-[#EADBD4]/40 hover:text-[#6B4C4A]'; ?>">
                         <i class="fa <?php echo $m[1]; ?> w-5 text-center"></i> 
                         <span><?php echo $m[0]; ?></span>
                     </a>
@@ -153,15 +151,15 @@ if (!isset($users)) {
         </div>
 
         <div class="pt-4 border-t border-[#EADBD4] space-y-1">
-            <a href="profil.php" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#8C6B68] hover:bg-[#EADBD4]/40 hover:text-[#6B4C4A] transition font-medium text-sm">
+            <a href="/admin/profil" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#8C6B68] hover:bg-[#EADBD4]/40 hover:text-[#6B4C4A] transition font-medium text-sm">
                 <i class="fas fa-user-circle w-5 text-center"></i>
                 <span>Mon Profil</span>
             </a>
-            <a href="parametres.php" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#8C6B68] hover:bg-[#EADBD4]/40 hover:text-[#6B4C4A] transition font-medium text-sm">
+            <a href="/admin/parametres" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#8C6B68] hover:bg-[#EADBD4]/40 hover:text-[#6B4C4A] transition font-medium text-sm">
                 <i class="fas fa-cog w-5 text-center"></i>
                 <span>Paramètres</span>
             </a>
-            <a href="logout.php" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition font-medium text-sm">
+            <a href="/logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition font-medium text-sm">
                 <i class="fas fa-sign-out-alt w-5 text-center"></i>
                 <span>Déconnexion</span>
             </a>
@@ -177,7 +175,7 @@ if (!isset($users)) {
                 <p class="text-sm text-[#8C6B68] mt-1">Gérez les accès et les comptes enregistrés sur le système</p>
             </div>
             
-            <a href="dashboard.php" class="bg-white hover:bg-[#FAF4EE] text-[#6B4C4A] px-4 py-2 rounded-2xl border border-[#EADBD4] text-xs font-bold transition shadow-sm flex items-center gap-2">
+            <a href="/admin/dashboard" class="bg-white hover:bg-[#FAF4EE] text-[#6B4C4A] px-4 py-2 rounded-2xl border border-[#EADBD4] text-xs font-bold transition shadow-sm flex items-center gap-2">
                 <i class="fas fa-arrow-left"></i> Retour au Dashboard
             </a>
         </header>
@@ -199,7 +197,7 @@ if (!isset($users)) {
                         <?php echo (isset($userToEdit) && $userToEdit) ? 'Modifier Utilisateur' : 'Nouvel Utilisateur'; ?>
                     </h3>
 
-                    <form action="utilisateurs.php" method="POST" class="space-y-4">
+                    <form action="/admin/users" method="POST" class="space-y-4">
                         <?php if (isset($userToEdit) && $userToEdit): ?>
                             <input type="hidden" name="action" value="edit_user">
                             <input type="hidden" name="id" value="<?php echo htmlspecialchars($userToEdit['id']); ?>">
@@ -243,7 +241,7 @@ if (!isset($users)) {
                                 <?php echo (isset($userToEdit) && $userToEdit) ? 'Mettre à jour' : 'Créer le compte'; ?>
                             </button>
                             <?php if (isset($userToEdit) && $userToEdit): ?>
-                                <a href="utilisateurs.php" class="bg-[#EADBD4] hover:bg-[#D4C4BD] text-[#6B4C4A] px-4 py-3 rounded-2xl text-xs font-bold transition flex items-center justify-center">
+                                <a href="/admin/users" class="bg-[#EADBD4] hover:bg-[#D4C4BD] text-[#6B4C4A] px-4 py-3 rounded-2xl text-xs font-bold transition flex items-center justify-center">
                                     <i class="fas fa-times"></i>
                                 </a>
                             <?php endif; ?>
@@ -252,7 +250,7 @@ if (!isset($users)) {
                 </div>
             </div>
 
-            <!-- TABLEAU LISTE DES UTILISATEURS (TOUT MONN K AP ANREJISTRE) -->
+            <!-- TABLEAU LISTE DES UTILISATEURS -->
             <div class="lg:col-span-2">
                 <div class="glass-card p-6 rounded-3xl shadow-sm">
                     <div class="flex items-center justify-between mb-6">
@@ -296,8 +294,8 @@ if (!isset($users)) {
                                             </span>
                                         </td>
                                         <td class="text-right space-x-1">
-                                            <a href="utilisateurs.php?edit=<?php echo $u['id']; ?>" class="p-1.5 hover:bg-[#FAF4EE] rounded-lg text-[#8C6B68] hover:text-[#C6856F] inline-block transition" title="Modifier"><i class="fas fa-edit text-xs"></i></a>
-                                            <a href="utilisateurs.php?delete=<?php echo $u['id']; ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');" class="p-1.5 hover:bg-rose-50 rounded-lg text-rose-400 hover:text-rose-600 inline-block transition" title="Supprimer"><i class="fas fa-trash text-xs"></i></a>
+                                            <a href="/admin/users?edit=<?php echo $u['id']; ?>" class="p-1.5 hover:bg-[#FAF4EE] rounded-lg text-[#8C6B68] hover:text-[#C6856F] inline-block transition" title="Modifier"><i class="fas fa-edit text-xs"></i></a>
+                                            <a href="/admin/users?delete=<?php echo $u['id']; ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');" class="p-1.5 hover:bg-rose-50 rounded-lg text-rose-400 hover:text-rose-600 inline-block transition" title="Supprimer"><i class="fas fa-trash text-xs"></i></a>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
