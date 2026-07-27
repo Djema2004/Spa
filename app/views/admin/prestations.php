@@ -16,6 +16,43 @@ try {
     die("Erè koneksyon baz done : " . $e->getMessage());
 }
 
+$message_succes = "";
+$message_erreur = "";
+
+// ==========================================
+// TRAITMAN FÒMILÈ A LÈ L SOUVME (AJOUT)
+// ==========================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ajouter_service') {
+    $name = trim($_POST['name'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $price = trim($_POST['price'] ?? '');
+    $duration_minutes = trim($_POST['duration_minutes'] ?? '');
+    $image = trim($_POST['image'] ?? ''); // Non fichye imaj la oswa URL la
+    
+    // Si pa gen imaj yo mete, nou ka mete yon imaj pa defo
+    if (empty($image)) {
+        $image = 'default-service.jpg';
+    }
+    
+    // Jenere yon UUID inik pou sèvi kòm kle primè
+    $uuid = 'SRV-' . strtoupper(uniqid() . '-' . mt_rand(100, 999));
+
+    if (!empty($name) && !empty($price) && !empty($duration_minutes)) {
+        try {
+            // Nou ajoute 'image' nan rekèt SQL la
+            $stmt_insert = $pdo->prepare("INSERT INTO services (uuid, name, description, image, duration_minutes, price) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt_insert->execute([$uuid, $name, $description, $image, $duration_minutes, $price]);
+            
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit();
+        } catch (PDOException $e) {
+            $message_erreur = "Erè pandan anrejistreman an: " . $e->getMessage();
+        }
+    } else {
+        $message_erreur = "Tanpri ranpli tout chan obligatwa yo.";
+    }
+}
+
 // MENI LIYEN YO
 $menu = [
     ['Tableau de bord', 'fa-chart-pie', 'dashboard.php'],
@@ -26,8 +63,8 @@ $menu = [
     ['Paiements', 'fa-wallet', 'paiements.php']
 ];
 
-// REKIPERE SÈVIS YO DIREK NAN BAZ DONE A (tab: services)
-$stmt = $pdo->query("SELECT * FROM services ORDER BY id DESC");
+// REKIPERE SÈVIS YO NAN BAZ LA
+$stmt = $pdo->query("SELECT * FROM services ORDER BY name ASC");
 $services = $stmt->fetchAll();
 
 $total_services = count($services);
@@ -53,7 +90,6 @@ $total_services = count($services);
         .text-terracotta { color: #9C413D; }
         .glass-card { background: #FFFFFF; border: 1px solid #F0E8E1; border-radius: 20px; }
         .badge-actif { background-color: #D1FAE5; color: #065F46; }
-        .badge-cat { background-color: #FAF0E6; color: #7A5C55; }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -89,6 +125,12 @@ $total_services = count($services);
     <!-- KONTNI PRINCIPAL -->
     <main class="flex-1 p-8">
         
+        <?php if(!empty($message_erreur)): ?>
+            <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl text-xs">
+                <?php echo $message_erreur; ?>
+            </div>
+        <?php endif; ?>
+
         <!-- HEADER TOP CARD -->
         <div class="glass-card p-6 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
             <div class="flex items-center gap-4">
@@ -128,44 +170,42 @@ $total_services = count($services);
                 <table class="w-full text-left text-xs" id="servicesTable">
                     <thead class="uppercase text-[#A38F88] font-bold border-b border-[#F0E8E1] bg-[#FAF7F2]">
                         <tr>
-                            <th class="px-6 py-4">UID</th>
+                            <th class="px-6 py-4">Image</th>
+                            <th class="px-6 py-4">UUID (Clé Primaire)</th>
                             <th class="px-6 py-4">Nom Service</th>
-                            <th class="px-6 py-4">Catégorie</th>
+                            <th class="px-6 py-4">Description</th>
                             <th class="px-6 py-4">Prix</th>
                             <th class="px-6 py-4">Durée</th>
-                            <th class="px-6 py-4">Statut</th>
                             <th class="px-6 py-4 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#F0E8E1]" id="tableBody">
                         <?php if($total_services > 0): ?>
                             <?php foreach($services as $s): ?>
-                            <tr class="hover:bg-[#FAF7F2]/50 transition" id="row-<?php echo $s['id']; ?>">
-                                <td class="px-6 py-4 font-bold text-[#9C413D] leading-tight w-32 cell-uid">
-                                    <?php echo htmlspecialchars($s['uid'] ?? 'N/A'); ?>
-                                </td>
-                                <td class="px-6 py-4 font-bold text-[#4A2E2B] text-sm font-serif-custom cell-nom">
-                                    <?php echo htmlspecialchars($s['nom'] ?? ''); ?>
-                                </td>
-                                <td class="px-6 py-4 cell-cat">
-                                    <span class="px-3 py-1 rounded-full badge-cat font-medium border border-[#E6DAD4]">
-                                        <?php echo htmlspecialchars($s['categorie'] ?? ''); ?>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 font-black text-[#4A2E2B] text-sm cell-prix">
-                                    <?php echo number_format($s['prix'] ?? 0, 2, '.', ','); ?> <span class="text-[10px] font-bold text-[#8C6D68]">HTG</span>
-                                </td>
-                                <td class="px-6 py-4 text-[#6B5B52] font-medium cell-duree">
-                                    <i class="far fa-clock text-[#A38F88] mr-1"></i> <?php echo htmlspecialchars($s['duree'] ?? '0'); ?> min
-                                </td>
+                            <tr class="hover:bg-[#FAF7F2]/50 transition">
                                 <td class="px-6 py-4">
-                                    <span class="px-3 py-1 rounded-full text-[10px] font-bold badge-actif inline-flex items-center gap-1">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-[#065F46]"></span> <?php echo htmlspecialchars($s['statut'] ?? 'Actif'); ?>
-                                    </span>
+                                    <div class="w-10 h-10 rounded-lg overflow-hidden bg-[#FAF7F2] border border-[#E6DAD4]">
+                                        <img src="uploads/<?php echo htmlspecialchars($s['image'] ?? 'default-service.jpg'); ?>" alt="" class="w-full h-full object-cover">
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 font-bold text-[#9C413D] leading-tight w-40">
+                                    <?php echo htmlspecialchars($s['uuid'] ?? 'N/A'); ?>
+                                </td>
+                                <td class="px-6 py-4 font-bold text-[#4A2E2B] text-sm font-serif-custom">
+                                    <?php echo htmlspecialchars($s['name'] ?? ''); ?>
+                                </td>
+                                <td class="px-6 py-4 text-[#8C6D68]">
+                                    <?php echo htmlspecialchars($s['description'] ?? ''); ?>
+                                </td>
+                                <td class="px-6 py-4 font-black text-[#4A2E2B] text-sm">
+                                    <?php echo number_format($s['price'] ?? 0, 2, '.', ','); ?> <span class="text-[10px] font-bold text-[#8C6D68]">HTG</span>
+                                </td>
+                                <td class="px-6 py-4 text-[#6B5B52] font-medium">
+                                    <i class="far fa-clock text-[#A38F88] mr-1"></i> <?php echo htmlspecialchars($s['duration_minutes'] ?? '0'); ?> min
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <a href="rendezvous.php?service=<?php echo urlencode($s['nom'] ?? ''); ?>" title="Réserver" class="w-7 h-7 rounded-lg bg-[#EAF7F2] text-[#0D7A5F] hover:bg-[#0D7A5F] hover:text-white transition flex items-center justify-center text-xs">
+                                        <a href="rendezvous.php?service_uuid=<?php echo urlencode($s['uuid'] ?? ''); ?>" title="Réserver" class="w-7 h-7 rounded-lg bg-[#EAF7F2] text-[#0D7A5F] hover:bg-[#0D7A5F] hover:text-white transition flex items-center justify-center text-xs">
                                             <i class="fas fa-calendar-plus"></i>
                                         </a>
                                     </div>
@@ -182,7 +222,7 @@ $total_services = count($services);
             </div>
 
             <div class="p-4 border-t border-[#F0E8E1] text-xs text-[#8C6D68]">
-                Affichage de <span class="font-bold text-[#4A2E2B]" id="displayCount"><?php echo $total_services; ?></span> service(s)
+                Affichage de <span class="font-bold text-[#4A2E2B]"><?php echo $total_services; ?></span> service(s)
             </div>
         </div>
     </main>
@@ -194,28 +234,28 @@ $total_services = count($services);
                 <h3 class="text-lg font-bold font-serif-custom text-[#4A2E2B]">Nouveau Service</h3>
                 <button onclick="closeAddModal()" class="text-[#8C6D68] hover:text-[#4A2E2B]"><i class="fas fa-times"></i></button>
             </div>
-            <form action="ajout_service.php" method="POST" class="space-y-4">
+            <form action="" method="POST" class="space-y-4">
+                <input type="hidden" name="action" value="ajouter_service">
                 <div>
                     <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Nom Service</label>
-                    <input type="text" name="nom" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
+                    <input type="text" name="name" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Catégorie</label>
-                    <select name="categorie" class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
-                        <option value="Massage">Massage</option>
-                        <option value="Manucure">Manucure</option>
-                        <option value="Soin du Visage">Soin du Visage</option>
-                        <option value="Extension Cils">Extension Cils</option>
-                    </select>
+                    <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Description</label>
+                    <textarea name="description" rows="2" class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Non Fichye Imaj la (pa egzanp: massage.jpg)</label>
+                    <input type="text" name="image" placeholder="massage.jpg" class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Prix (HTG)</label>
-                        <input type="text" name="prix" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
+                        <input type="text" name="price" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Durée (Min)</label>
-                        <input type="number" name="duree" value="60" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
+                        <input type="number" name="duration_minutes" value="60" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">

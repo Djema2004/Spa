@@ -59,14 +59,16 @@ class RendezvousController {
         $offset = ($page - 1) * $limit;
 
         try {
-            $sql_base = "FROM rendezvous r
-                        LEFT JOIN clients c ON r.id_client = c.id_client
-                        LEFT JOIN estheticiennes e ON r.id_estheticienne = e.id
+            // Liaison avec la table services (s) et la table users (u pour client, e pour estheticienne)
+            $sql_base = "FROM appointments r
+                        LEFT JOIN users u ON r.user_id = u.id
+                        LEFT JOIN services s ON r.service_id = s.id
+                        LEFT JOIN users e ON r.estheticienne_id = e.id AND e.role = 'estheticienne'
                         WHERE 1=1";
             $params = [];
 
             if (!empty($search)) {
-                $sql_base .= " AND (c.nom LIKE ? OR c.prenom LIKE ? OR r.service LIKE ? OR r.mode_paiement LIKE ?)";
+                $sql_base .= " AND (u.lastname LIKE ? OR u.firstname LIKE ? OR r.status LIKE ? OR s.name LIKE ?)";
                 $params[] = "%$search%";
                 $params[] = "%$search%";
                 $params[] = "%$search%";
@@ -74,7 +76,7 @@ class RendezvousController {
             }
 
             if (!empty($statut_filter)) {
-                $sql_base .= " AND r.statut = ?";
+                $sql_base .= " AND r.status = ?";
                 $params[] = $statut_filter;
             }
 
@@ -84,17 +86,21 @@ class RendezvousController {
             $total_pages = ceil($filtered_total / $limit);
 
             $sql = "SELECT r.*, 
-                           CONCAT(c.prenom, ' ', c.nom) AS client_nom, c.telephone AS client_phone,
-                           CONCAT(e.prenom, ' ', e.nom) AS estheticienne_nom
-                    " . $sql_base . " ORDER BY r.date_rendezvous DESC LIMIT $limit OFFSET $offset";
+                           COALESCE(CONCAT(u.firstname, ' ', u.lastname), r.nom_client) AS client_nom, 
+                           u.email AS client_phone,
+                           COALESCE(s.name, 'Service non spécifié') AS service_nom,
+                           COALESCE(s.price, 0) AS service_tarif,
+                           CONCAT(e.firstname, ' ', e.lastname) AS estheticienne_nom
+                    " . $sql_base . " ORDER BY r.appointment_date DESC LIMIT $limit OFFSET $offset";
 
             $stmt = $db->prepare($sql);
             $stmt->execute($params);
             $rendezvous = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-            $clients = $db->query("SELECT id_client AS id, CONCAT(prenom, ' ', nom) AS nom_complet FROM clients ORDER BY nom ASC")->fetchAll();
-            $prestations = $db->query("SELECT id, nom_prestation, prix FROM prestations ORDER BY nom_prestation ASC")->fetchAll();
-            $estheticiennes = $db->query("SELECT id, CONCAT(prenom, ' ', nom) AS nom_complet FROM estheticiennes ORDER BY nom ASC")->fetchAll();
+            // Récupération des listes pour les formulaires (clients, services et esthéticiennes)
+            $clients = $db->query("SELECT id, CONCAT(firstname, ' ', lastname) AS nom_complet FROM users WHERE role = 'client' ORDER BY lastname ASC")->fetchAll();
+            $services = $db->query("SELECT id, name, price FROM services ORDER BY name ASC")->fetchAll();
+            $estheticiennes = $db->query("SELECT id, CONCAT(firstname, ' ', lastname) AS nom_complet FROM users WHERE role = 'estheticienne' ORDER BY lastname ASC")->fetchAll();
 
         } catch (PDOException $e) {
             echo "Erè SQL: " . $e->getMessage();
@@ -109,7 +115,6 @@ class RendezvousController {
         }
     }
 
-    // 📄 Metòd recu() pou afiche/imprime resi an
     public function recu($id = null) {
         $id = $id ?? ($_GET['id'] ?? null);
 
@@ -122,14 +127,16 @@ class RendezvousController {
 
         try {
             $sql = "SELECT r.*, 
-                           CONCAT(c.prenom, ' ', c.nom) AS client_nom, 
-                           c.telephone AS client_phone,
-                           c.email AS client_email,
-                           CONCAT(e.prenom, ' ', e.nom) AS estheticienne_nom
-                    FROM rendezvous r
-                    LEFT JOIN clients c ON r.id_client = c.id_client
-                    LEFT JOIN estheticiennes e ON r.id_estheticienne = e.id
-                    WHERE r.id_rendezvous = ?";
+                           COALESCE(CONCAT(u.firstname, ' ', u.lastname), r.nom_client) AS client_nom, 
+                           u.email AS client_email,
+                           COALESCE(s.name, 'Service non spécifié') AS service_nom,
+                           COALESCE(s.price, 0) AS service_tarif,
+                           CONCAT(e.firstname, ' ', e.lastname) AS estheticienne_nom
+                    FROM appointments r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    LEFT JOIN services s ON r.service_id = s.id
+                    LEFT JOIN users e ON r.estheticienne_id = e.id AND e.role = 'estheticienne'
+                    WHERE r.id = ?";
 
             $stmt = $db->prepare($sql);
             $stmt->execute([$id]);
@@ -140,12 +147,10 @@ class RendezvousController {
                 exit;
             }
 
-            // Chaje view pou resi an (recu.php)
             $recuView = __DIR__ . '/../views/admin/recu.php';
             if (file_exists($recuView)) {
                 require_once $recuView;
             } else {
-                // Si paj la nan yon lòt pati nan ka kote w gen yon fichye dirèk
                 $altView = __DIR__ . '/../views/recu.php';
                 if (file_exists($altView)) {
                     require_once $altView;
@@ -160,7 +165,6 @@ class RendezvousController {
         }
     }
 
-    // ✏️ Metòd edit
     public function edit($id = null) {
         $id = $id ?? ($_GET['id'] ?? null);
 
@@ -173,12 +177,15 @@ class RendezvousController {
 
         try {
             $sql = "SELECT r.*, 
-                           CONCAT(c.prenom, ' ', c.nom) AS client_nom, 
-                           CONCAT(e.prenom, ' ', e.nom) AS estheticienne_nom
-                    FROM rendezvous r
-                    LEFT JOIN clients c ON r.id_client = c.id_client
-                    LEFT JOIN estheticiennes e ON r.id_estheticienne = e.id
-                    WHERE r.id_rendezvous = ?";
+                           COALESCE(CONCAT(u.firstname, ' ', u.lastname), r.nom_client) AS client_nom, 
+                           COALESCE(s.name, 'Service non spécifié') AS service_nom,
+                           COALESCE(s.price, 0) AS service_tarif,
+                           CONCAT(e.firstname, ' ', e.lastname) AS estheticienne_nom
+                    FROM appointments r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    LEFT JOIN services s ON r.service_id = s.id
+                    LEFT JOIN users e ON r.estheticienne_id = e.id AND e.role = 'estheticienne'
+                    WHERE r.id = ?";
 
             $stmt = $db->prepare($sql);
             $stmt->execute([$id]);
@@ -189,9 +196,9 @@ class RendezvousController {
                 exit;
             }
 
-            $clients = $db->query("SELECT id_client AS id, CONCAT(prenom, ' ', nom) AS nom_complet FROM clients ORDER BY nom ASC")->fetchAll();
-            $prestations = $db->query("SELECT id, nom_prestation, prix FROM prestations ORDER BY nom_prestation ASC")->fetchAll();
-            $estheticiennes = $db->query("SELECT id, CONCAT(prenom, ' ', nom) AS nom_complet FROM estheticiennes ORDER BY nom ASC")->fetchAll();
+            $clients = $db->query("SELECT id, CONCAT(firstname, ' ', lastname) AS nom_complet FROM users WHERE role = 'client' ORDER BY lastname ASC")->fetchAll();
+            $services = $db->query("SELECT id, name, price FROM services ORDER BY name ASC")->fetchAll();
+            $estheticiennes = $db->query("SELECT id, CONCAT(firstname, ' ', lastname) AS nom_complet FROM users WHERE role = 'estheticienne' ORDER BY lastname ASC")->fetchAll();
 
             $editView = __DIR__ . '/../views/admin/modifier_rendezvous.php';
             if (file_exists($editView)) {
@@ -209,18 +216,19 @@ class RendezvousController {
     public function store() {
         $db = $this->getDbConnection();
 
-        $id_client = $_POST['id_client'] ?? $_POST['client_id'] ?? null;
-        $id_estheticienne = $_POST['id_estheticienne'] ?? $_POST['estheticienne_id'] ?? null;
-        $service = $_POST['service'] ?? $_POST['nom_prestation'] ?? '';
-        $montant = $_POST['montant'] ?? 0;
-        $mode_paiement = $_POST['mode_paiement'] ?? 'Carte Bancaire';
-        $date_rendezvous = $_POST['date_rendezvous'] ?? $_POST['date_rdv'] ?? date('Y-m-d H:i:s');
-        $statut = $_POST['statut'] ?? 'En attente';
+        $id = uniqid('apt_', true);
+        $user_id = $_POST['id_client'] ?? $_POST['client_id'] ?? null;
+        $service_id = $_POST['id_service'] ?? $_POST['service_id'] ?? $_POST['id_estheticienne'] ?? null;
+        
+        $appointment_date = $_POST['appointment_date'] ?? $_POST['date_rendezvous'] ?? $_POST['date_rdv'] ?? date('Y-m-d');
+        $appointment_time = $_POST['appointment_time'] ?? $_POST['heure_rdv'] ?? '10:00:00';
+        
+        $status = $_POST['statut'] ?? 'pending';
 
-        if (!empty($id_client) && !empty($service)) {
+        if (!empty($user_id)) {
             try {
-                $stmt = $db->prepare("INSERT INTO rendezvous (id_client, id_estheticienne, service, montant, mode_paiement, date_rendezvous, statut) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$id_client, $id_estheticienne, $service, $montant, $mode_paiement, $date_rendezvous, $statut]);
+                $stmt = $db->prepare("INSERT INTO appointments (id, user_id, service_id, appointment_date, appointment_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+                $stmt->execute([$id, $user_id, $service_id, $appointment_date, $appointment_time, $status]);
             } catch (PDOException $ex) {
                 die("Erè nan anregistreman: " . $ex->getMessage());
             }
@@ -233,19 +241,18 @@ class RendezvousController {
     public function update() {
         $db = $this->getDbConnection();
 
-        $id_rendezvous = $_POST['id_rendezvous'] ?? $_POST['id'] ?? '';
-        $id_client = $_POST['id_client'] ?? $_POST['client_id'] ?? null;
-        $id_estheticienne = $_POST['id_estheticienne'] ?? $_POST['estheticienne_id'] ?? null;
-        $service = $_POST['service'] ?? '';
-        $montant = $_POST['montant'] ?? 0;
-        $mode_paiement = $_POST['mode_paiement'] ?? 'Carte Bancaire';
-        $date_rendezvous = $_POST['date_rendezvous'] ?? null;
-        $statut = $_POST['statut'] ?? 'En attente';
+        $id = $_POST['id_rendezvous'] ?? $_POST['id'] ?? '';
+        $user_id = $_POST['id_client'] ?? $_POST['client_id'] ?? null;
+        $service_id = $_POST['id_service'] ?? $_POST['service_id'] ?? null;
+        
+        $appointment_date = $_POST['appointment_date'] ?? $_POST['date_rendezvous'] ?? null;
+        $appointment_time = $_POST['appointment_time'] ?? $_POST['heure_rdv'] ?? null;
+        $status = $_POST['statut'] ?? 'pending';
 
-        if (!empty($id_rendezvous) && !empty($id_client)) {
+        if (!empty($id)) {
             try {
-                $stmt = $db->prepare("UPDATE rendezvous SET id_client = ?, id_estheticienne = ?, service = ?, montant = ?, mode_paiement = ?, date_rendezvous = ?, statut = ? WHERE id_rendezvous = ?");
-                $stmt->execute([$id_client, $id_estheticienne, $service, $montant, $mode_paiement, $date_rendezvous, $statut, $id_rendezvous]);
+                $stmt = $db->prepare("UPDATE appointments SET user_id = ?, service_id = ?, appointment_date = ?, appointment_time = ?, status = ? WHERE id = ?");
+                $stmt->execute([$user_id, $service_id, $appointment_date, $appointment_time, $status, $id]);
             } catch (PDOException $ex) {
                 die("Erè nan modifikasyon: " . $ex->getMessage());
             }
@@ -258,13 +265,13 @@ class RendezvousController {
     public function toggleStatus($id) {
         $db = $this->getDbConnection();
         try {
-            $stmt = $db->prepare("SELECT statut FROM rendezvous WHERE id_rendezvous = ?");
+            $stmt = $db->prepare("SELECT status FROM appointments WHERE id = ?");
             $stmt->execute([$id]);
             $curr = $stmt->fetchColumn();
             
-            $new_status = ($curr === 'Confirmé') ? 'Annulé' : 'Confirmé';
+            $new_status = ($curr === 'Confirmé' || $curr === 'confirmed') ? 'cancelled' : 'confirmed';
 
-            $updateStmt = $db->prepare("UPDATE rendezvous SET statut = ? WHERE id_rendezvous = ?");
+            $updateStmt = $db->prepare("UPDATE appointments SET status = ? WHERE id = ?");
             $updateStmt->execute([$new_status, $id]);
         } catch (PDOException $ex) {}
 
@@ -281,28 +288,27 @@ class RendezvousController {
         $output = fopen('php://output', 'w');
         fputs($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-        fputcsv($output, ['ID Rendez-vous', 'Client', 'Estheticienne', 'Service', 'Montant (HTG)', 'Mode Paiement', 'Date Rendez-vous', 'Statut']);
+        fputcsv($output, ['ID Rendez-vous', 'Client', 'Prestation', 'Tarif', 'Date Rendez-vous', 'Statut']);
 
-        $sql = "SELECT r.id_rendezvous, 
-                       CONCAT(c.prenom, ' ', c.nom) AS client_nom, 
-                       CONCAT(e.prenom, ' ', e.nom) AS estheticienne_nom, 
-                       r.service, r.montant, r.mode_paiement, r.date_rendezvous, r.statut
-                FROM rendezvous r
-                LEFT JOIN clients c ON r.id_client = c.id_client
-                LEFT JOIN estheticiennes e ON r.id_estheticienne = e.id
-                ORDER BY r.id_rendezvous ASC";
+        $sql = "SELECT r.id, 
+                       COALESCE(CONCAT(u.firstname, ' ', u.lastname), r.nom_client) AS client_nom, 
+                       COALESCE(s.name, 'N/A') AS service_nom,
+                       COALESCE(s.price, 0) AS service_tarif,
+                       r.appointment_date, r.status
+                FROM appointments r
+                LEFT JOIN users u ON r.user_id = u.id
+                LEFT JOIN services s ON r.service_id = s.id
+                ORDER BY r.appointment_date ASC";
 
         $stmt_exp = $db->query($sql);
         while ($row = $stmt_exp->fetch(PDO::FETCH_ASSOC)) {
             fputcsv($output, [
-                $row['id_rendezvous'],
+                $row['id'],
                 $row['client_nom'] ?? 'N/A',
-                $row['estheticienne_nom'] ?? 'N/A',
-                $row['service'] ?? 'N/A',
-                $row['montant'],
-                $row['mode_paiement'] ?? 'N/A',
-                $row['date_rendezvous'],
-                $row['statut']
+                $row['service_nom'],
+                $row['service_tarif'],
+                $row['appointment_date'],
+                $row['status']
             ]);
         }
         fclose($output);
@@ -315,7 +321,7 @@ class RendezvousController {
         if ($id) {
             $db = $this->getDbConnection();
             try {
-                $stmt = $db->prepare("DELETE FROM rendezvous WHERE id_rendezvous = :id");
+                $stmt = $db->prepare("DELETE FROM appointments WHERE id = :id");
                 $stmt->execute(['id' => $id]);
             } catch (PDOException $e) {
                 echo "Erè pandan sipresyon an: " . $e->getMessage();

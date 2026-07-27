@@ -69,7 +69,6 @@ class PrestationController {
         $offset = ($page - 1) * $limit;
 
         try {
-            // Sèvi ak tab 'services'
             $sql_base = "FROM services WHERE 1=1";
             $params = [];
 
@@ -79,7 +78,6 @@ class PrestationController {
                 $params[] = "%$search%";
             }
 
-            // Si ou pa gen kolòn 'categorie' nan tab services ou a, ou ka retire l oswa ajoute l nan DB
             if (!empty($cat_filter)) {
                 $sql_base .= " AND category = ?";
                 $params[] = $cat_filter;
@@ -90,7 +88,6 @@ class PrestationController {
             $filtered_total = $count_stmt->fetchColumn();
             $total_pages = ceil($filtered_total / $limit);
 
-            // Sèvi ak bon non kolon yo pou lòd yo
             $order_clause = " ORDER BY name ASC";
             if ($sort_by === 'prix_asc') $order_clause = " ORDER BY price ASC";
             elseif ($sort_by === 'prix_desc') $order_clause = " ORDER BY price DESC";
@@ -115,6 +112,16 @@ class PrestationController {
         }
     }
 
+    // Méthode pour afficher le formulaire d'ajout d'un service
+    public function create() {
+        $viewFile = __DIR__ . '/../views/admin/ajout_service.php';
+        if (file_exists($viewFile)) {
+            require_once $viewFile;
+        } else {
+            echo "Erè: Fichye view 'ajout_service.php' la pa jwenn.";
+        }
+    }
+
     public function store() {
         $db = $this->db;
 
@@ -125,7 +132,6 @@ class PrestationController {
 
         if (!empty($name)) {
             try {
-                // Afekte nan tab 'services' ak kolon ki koresponn yo
                 $stmt = $db->prepare("INSERT INTO services (name, description, duration_minutes, price, created_at) VALUES (?, ?, ?, ?, NOW())");
                 $stmt->execute([$name, $description, $duration_minutes, $price]);
             } catch (PDOException $ex) {
@@ -134,7 +140,7 @@ class PrestationController {
             }
         }
 
-        header('Location: /spa/prestations');
+        header('Location: /spa/admin/prestations');
         exit;
     }
 
@@ -157,18 +163,17 @@ class PrestationController {
             }
         }
 
-        header('Location: /spa/prestations');
+        header('Location: /spa/admin/prestations');
         exit;
     }
 
     public function toggleStatus($id) {
-        // Si tab services ou a pa gen kolòn 'statut', ou ka ajoute l sou phpMyAdmin oubyen kite l konsa
         $db = $this->db;
         try {
-            // Tcheke si kolòn statut egziste oswa jere l si sa nesesè
+            // Logique de bascule de statut si nécessaire
         } catch (PDOException $ex) {}
 
-        header('Location: /spa/prestations');
+        header('Location: /spa/admin/prestations');
         exit;
     }
 
@@ -178,6 +183,7 @@ class PrestationController {
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=services_spadream_' . date('Y-m-d') . '.csv');
         $output = fopen('php://output', 'w');
+        fputs($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
         fputcsv($output, ['ID', 'Nom Service', 'Description', 'Duree (min)', 'Prix (HTG)', 'Date Creation']);
 
         $stmt_exp = $db->query("SELECT * FROM services ORDER BY id ASC");
@@ -209,7 +215,7 @@ class PrestationController {
             }
         }
 
-        header('Location: /spa/prestations');
+        header('Location: /spa/admin/prestations');
         exit;
     }
 }
