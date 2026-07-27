@@ -69,7 +69,7 @@ class PrestationController {
         $offset = ($page - 1) * $limit;
 
         try {
-            $sql_base = "FROM services WHERE 1=1";
+            $sql_base = " FROM services WHERE 1=1";
             $params = [];
 
             if (!empty($search)) {
@@ -94,7 +94,12 @@ class PrestationController {
             elseif ($sort_by === 'duree_asc') $order_clause = " ORDER BY duration_minutes ASC";
             elseif ($sort_by === 'duree_desc') $order_clause = " ORDER BY duration_minutes DESC";
 
-            $sql = "SELECT * " . $sql_base . $order_clause . " LIMIT $limit OFFSET $offset";
+            // Korije: services.* nan plas services*
+            $sql = "SELECT services.*, 
+                price as display_price,
+                image as display_image 
+                " . $sql_base . $order_clause . " LIMIT $limit OFFSET $offset";
+            
             $stmt = $db->prepare($sql);
             $stmt->execute($params);
             $prestations = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
@@ -112,7 +117,6 @@ class PrestationController {
         }
     }
 
-    // Méthode pour afficher le formulaire d'ajout d'un service
     public function create() {
         $viewFile = __DIR__ . '/../views/admin/ajout_service.php';
         if (file_exists($viewFile)) {
@@ -122,19 +126,83 @@ class PrestationController {
         }
     }
 
+    public function manucure() {
+        $db = $this->db;
+        $services = [];
+
+        try {
+            // Korije: services.* nan plas services*
+            $stmt = $db->prepare("SELECT services.*, 
+                price as display_price,
+                image as display_image 
+                FROM services WHERE category LIKE '%Manucure%' OR category LIKE '%Pédicure%' OR name LIKE '%Manucure%' OR name LIKE '%Pédicure%' ORDER BY name ASC");
+            $stmt->execute();
+            $services = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (PDOException $e) {
+            echo "Erè SQL: " . $e->getMessage();
+            exit;
+        }
+
+        $viewFile = __DIR__ . '/../views/manucure_pedicure.php';
+        if (file_exists($viewFile)) {
+            require_once $viewFile;
+        } else {
+            echo "Erè: Fichye view la pa egziste nan chemen sa a: " . $viewFile;
+        }
+    }
+
+    private function handleSingleImageUpload() {
+        $imageName = null;
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $uploadFileDir = __DIR__ . '/../../public/image/';
+            if (!is_dir($uploadFileDir)) {
+                mkdir($uploadFileDir, 0755, true);
+            }
+
+            $fileTmpPath = $_FILES['image']['tmp_name'];
+            $fileName = $_FILES['image']['name'];
+            $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+            if (in_array($fileExtension, $allowedExtensions)) {
+                $cleanName = preg_replace('/[^\p{L}\p{N}]/u', '_', pathinfo($fileName, PATHINFO_FILENAME));
+                $imageName = time() . '_' . $cleanName . '.' . $fileExtension;
+                $dest_path = $uploadFileDir . $imageName;
+                
+                if (!move_uploaded_file($fileTmpPath, $dest_path)) {
+                    $imageName = null;
+                }
+            }
+        }
+        return $imageName;
+    }
+
     public function store() {
         $db = $this->db;
 
         $name = $_POST['nom_prestation'] ?? $_POST['name'] ?? '';
         $description = $_POST['description'] ?? '';
         $duration_minutes = $_POST['duree'] ?? $_POST['duration_minutes'] ?? 0;
-        $price = $_POST['prix'] ?? $_POST['price'] ?? 0;
+        $price = $_POST['price'] ?? $_POST['prix'] ?? 0;
+        $category = $_POST['category'] ?? 'Manucure & Pédicure'; 
+        
+        $imageName = $this->handleSingleImageUpload();
 
         if (!empty($name)) {
             try {
-                $stmt = $db->prepare("INSERT INTO services (name, description, duration_minutes, price, created_at) VALUES (?, ?, ?, ?, NOW())");
-                $stmt->execute([$name, $description, $duration_minutes, $price]);
-            } catch (PDOException $ex) {
+                $uuid = sprintf(
+                    '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                    mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+                    mt_rand(0, 0xffff),
+                    mt_rand(0, 0x0fff) | 0x4000,
+                    mt_rand(0, 0x3fff) | 0x8000,
+                    mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+                );
+
+                $stmt = $db->prepare("INSERT INTO services (uuid, name, description, duration_minutes, price, image, category, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+                $stmt->execute([$uuid, $name, $description, $duration_minutes, $price, $imageName, $category]);
+
+            } catch (Exception $ex) {
                 echo "Erè pandan anrejistreman an: " . $ex->getMessage();
                 exit;
             }
@@ -151,13 +219,21 @@ class PrestationController {
         $name = $_POST['nom_prestation'] ?? $_POST['name'] ?? '';
         $description = $_POST['description'] ?? '';
         $duration_minutes = $_POST['duree'] ?? $_POST['duration_minutes'] ?? 0;
-        $price = $_POST['prix'] ?? $_POST['price'] ?? 0;
+        $price = $_POST['price'] ?? $_POST['prix'] ?? 0;
+        $category = $_POST['category'] ?? 'Manucure & Pédicure';
+
+        $imageName = $this->handleSingleImageUpload();
 
         if (!empty($id) && !empty($name)) {
             try {
-                $stmt = $db->prepare("UPDATE services SET name = ?, description = ?, duration_minutes = ?, price = ?, updated_at = NOW() WHERE id = ?");
-                $stmt->execute([$name, $description, $duration_minutes, $price, $id]);
-            } catch (PDOException $ex) {
+                if ($imageName) {
+                    $stmt = $db->prepare("UPDATE services SET name = ?, description = ?, duration_minutes = ?, price = ?, image = ?, category = ?, updated_at = NOW() WHERE uuid = ?");
+                    $stmt->execute([$name, $description, $duration_minutes, $price, $imageName, $category, $id]);
+                } else {
+                    $stmt = $db->prepare("UPDATE services SET name = ?, description = ?, duration_minutes = ?, price = ?, category = ?, updated_at = NOW() WHERE uuid = ?");
+                    $stmt->execute([$name, $description, $duration_minutes, $price, $category, $id]);
+                }
+            } catch (Exception $ex) {
                 echo "Erè pandan mizajou a: " . $ex->getMessage();
                 exit;
             }
@@ -168,11 +244,6 @@ class PrestationController {
     }
 
     public function toggleStatus($id) {
-        $db = $this->db;
-        try {
-            // Logique de bascule de statut si nécessaire
-        } catch (PDOException $ex) {}
-
         header('Location: /spa/admin/prestations');
         exit;
     }
@@ -184,16 +255,17 @@ class PrestationController {
         header('Content-Disposition: attachment; filename=services_spadream_' . date('Y-m-d') . '.csv');
         $output = fopen('php://output', 'w');
         fputs($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
-        fputcsv($output, ['ID', 'Nom Service', 'Description', 'Duree (min)', 'Prix (HTG)', 'Date Creation']);
+        fputcsv($output, ['UUID', 'Nom Service', 'Kategori', 'Description', 'Prix', 'Duree (min)', 'Date Creation']);
 
-        $stmt_exp = $db->query("SELECT * FROM services ORDER BY id ASC");
+        $stmt_exp = $db->query("SELECT * FROM services ORDER BY name ASC");
         while ($row = $stmt_exp->fetch(PDO::FETCH_ASSOC)) {
             fputcsv($output, [
-                $row['id'],
+                $row['uuid'] ?? '',
                 $row['name'],
+                $row['category'] ?? '',
                 $row['description'] ?? '',
+                $row['price'] ?? 0,
                 $row['duration_minutes'],
-                $row['price'],
                 $row['created_at'] ?? ''
             ]);
         }
@@ -207,7 +279,7 @@ class PrestationController {
         if ($id) {
             $db = $this->db;
             try {
-                $stmt = $db->prepare("DELETE FROM services WHERE id = :id");
+                $stmt = $db->prepare("DELETE FROM services WHERE uuid = :id");
                 $stmt->execute(['id' => $id]);
             } catch (PDOException $e) {
                 echo "Erè pandan sipresyon an: " . $e->getMessage();

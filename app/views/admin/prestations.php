@@ -25,31 +25,72 @@ $message_erreur = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ajouter_service') {
     $name = trim($_POST['name'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $price = trim($_POST['price'] ?? '');
     $duration_minutes = trim($_POST['duration_minutes'] ?? '');
-    $image = trim($_POST['image'] ?? ''); // Non fichye imaj la oswa URL la
-    
-    // Si pa gen imaj yo mete, nou ka mete yon imaj pa defo
-    if (empty($image)) {
-        $image = 'default-service.jpg';
-    }
     
     // Jenere yon UUID inik pou sèvi kòm kle primè
     $uuid = 'SRV-' . strtoupper(uniqid() . '-' . mt_rand(100, 999));
 
-    if (!empty($name) && !empty($price) && !empty($duration_minutes)) {
+    if (!empty($name) && !empty($duration_minutes)) {
         try {
-            // Nou ajoute 'image' nan rekèt SQL la
-            $stmt_insert = $pdo->prepare("INSERT INTO services (uuid, name, description, image, duration_minutes, price) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt_insert->execute([$uuid, $name, $description, $image, $duration_minutes, $price]);
+            $pdo->beginTransaction();
+
+            // 1. Mete premye enfòmasyon debaz yo nan tab services (san price obligatwa si w jere l nan service_prices)
+            $stmt_insert = $pdo->prepare("INSERT INTO services (uuid, name, description, duration_minutes) VALUES (?, ?, ?, ?)");
+            $stmt_insert->execute([$uuid, $name, $description, $duration_minutes]);
             
+            // 2. TRETMAN PLIZYÈ PRI
+            if (!empty($_POST['price_labels']) && !empty($_POST['prices'])) {
+                $labels = $_POST['price_labels'];
+                $prices = $_POST['prices'];
+                
+                $stmt_price = $pdo->prepare("INSERT INTO service_prices (service_uuid, price_label, price) VALUES (?, ?, ?)");
+                
+                for ($i = 0; $i < count($prices); $i++) {
+                    if (!empty($prices[$i]) && !empty($labels[$i])) {
+                        $stmt_price->execute([$uuid, trim($labels[$i]), trim($prices[$i])]);
+                    }
+                }
+            }
+
+            // 3. TRETMAN PLIZYÈ IMAJ
+            if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
+                $uploadFileDir = __DIR__ . '/uploads/';
+                if (!is_dir($uploadFileDir)) {
+                    mkdir($uploadFileDir, 0755, true);
+                }
+
+                $stmt_img = $pdo->prepare("INSERT INTO service_images (service_uuid, image_path) VALUES (?, ?)");
+                
+                $fileCount = count($_FILES['images']['name']);
+                for ($i = 0; $i < $fileCount; $i++) {
+                    if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
+                        $fileTmpPath = $_FILES['images']['tmp_name'][$i];
+                        $fileName = $_FILES['images']['name'][$i];
+                        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                        
+                        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+                        if (in_array($fileExtension, $allowedExtensions)) {
+                            $newFileName = md5(time() . $fileName . $i) . '.' . $fileExtension;
+                            $dest_path = $uploadFileDir . $newFileName;
+                            
+                            if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                                $stmt_img->execute([$uuid, $newFileName]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            $pdo->commit();
             header("Location: " . $_SERVER['PHP_SELF']);
             exit();
-        } catch (PDOException $e) {
+
+        } catch (Exception $e) {
+            $pdo->rollBack();
             $message_erreur = "Erè pandan anrejistreman an: " . $e->getMessage();
         }
     } else {
-        $message_erreur = "Tanpri ranpli tout chan obligatwa yo.";
+        $message_erreur = "Tanpri ranpli omwen non sèvis la ak dire a.";
     }
 }
 
@@ -63,8 +104,11 @@ $menu = [
     ['Paiements', 'fa-wallet', 'paiements.php']
 ];
 
-// REKIPERE SÈVIS YO NAN BAZ LA
-$stmt = $pdo->query("SELECT * FROM services ORDER BY name ASC");
+// REKIPERE SÈVIS YO NAN BAZ LA (Avèk pri yo ak premye imaj la si w vle)
+$stmt = $pdo->query("SELECT s.*, 
+    (SELECT price FROM service_prices WHERE service_uuid = s.uuid LIMIT 1) as display_price,
+    (SELECT image_path FROM service_images WHERE service_uuid = s.uuid LIMIT 1) as display_image 
+    FROM services s ORDER BY s.name ASC");
 $services = $stmt->fetchAll();
 
 $total_services = count($services);
@@ -170,11 +214,11 @@ $total_services = count($services);
                 <table class="w-full text-left text-xs" id="servicesTable">
                     <thead class="uppercase text-[#A38F88] font-bold border-b border-[#F0E8E1] bg-[#FAF7F2]">
                         <tr>
-                            <th class="px-6 py-4">Image</th>
-                            <th class="px-6 py-4">UUID (Clé Primaire)</th>
-                            <th class="px-6 py-4">Nom Service</th>
-                            <th class="px-6 py-4">Description</th>
-                            <th class="px-6 py-4">Prix</th>
+                            <th class="px-6 py-4">Imaj</th>
+                            <th class="px-6 py-4">UUID</th>
+                            <th class="px-6 py-4">Non Sèvis</th>
+                            <th class="px-6 py-4">Deskripsyon</th>
+                            <th class="px-6 py-4">Pri (Apèsi)</th>
                             <th class="px-6 py-4">Durée</th>
                             <th class="px-6 py-4 text-center">Actions</th>
                         </tr>
@@ -185,7 +229,7 @@ $total_services = count($services);
                             <tr class="hover:bg-[#FAF7F2]/50 transition">
                                 <td class="px-6 py-4">
                                     <div class="w-10 h-10 rounded-lg overflow-hidden bg-[#FAF7F2] border border-[#E6DAD4]">
-                                        <img src="uploads/<?php echo htmlspecialchars($s['image'] ?? 'default-service.jpg'); ?>" alt="" class="w-full h-full object-cover">
+                                        <img src="uploads/<?php echo htmlspecialchars($s['display_image'] ?? 'default-service.jpg'); ?>" alt="" class="w-full h-full object-cover">
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 font-bold text-[#9C413D] leading-tight w-40">
@@ -198,7 +242,7 @@ $total_services = count($services);
                                     <?php echo htmlspecialchars($s['description'] ?? ''); ?>
                                 </td>
                                 <td class="px-6 py-4 font-black text-[#4A2E2B] text-sm">
-                                    <?php echo number_format($s['price'] ?? 0, 2, '.', ','); ?> <span class="text-[10px] font-bold text-[#8C6D68]">HTG</span>
+                                    <?php echo number_format($s['display_price'] ?? 0, 2, '.', ','); ?> <span class="text-[10px] font-bold text-[#8C6D68]">HTG</span>
                                 </td>
                                 <td class="px-6 py-4 text-[#6B5B52] font-medium">
                                     <i class="far fa-clock text-[#A38F88] mr-1"></i> <?php echo htmlspecialchars($s['duration_minutes'] ?? '0'); ?> min
@@ -227,37 +271,54 @@ $total_services = count($services);
         </div>
     </main>
 
-    <!-- MODAL POU AJOUTE SÈVIS -->
-    <div id="addModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#E6DAD4]">
+    <!-- MODAL POU AJOUTE SÈVIS (AVÈK PLIZYÈ PRI AK FOTO) -->
+    <div id="addModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#E6DAD4] my-8">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold font-serif-custom text-[#4A2E2B]">Nouveau Service</h3>
+                <h3 class="text-lg font-bold font-serif-custom text-[#4A2E2B]">Nouveau Service (Plizyè Pri & Foto)</h3>
                 <button onclick="closeAddModal()" class="text-[#8C6D68] hover:text-[#4A2E2B]"><i class="fas fa-times"></i></button>
             </div>
-            <form action="" method="POST" class="space-y-4">
+            
+            <form action="" method="POST" enctype="multipart/form-data" class="space-y-4">
                 <input type="hidden" name="action" value="ajouter_service">
+                
                 <div>
                     <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Nom Service</label>
                     <input type="text" name="name" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
                 </div>
+                
                 <div>
                     <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Description</label>
                     <textarea name="description" rows="2" class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none"></textarea>
                 </div>
+
+                <!-- PATI PLIZYÈ PRI -->
+                <div class="border-t border-b border-[#E6DAD4] py-3 my-2">
+                    <label class="block text-xs font-bold text-[#9C413D] uppercase mb-2">Pri yo ak Non Opsyon yo</label>
+                    <div id="prices-container" class="space-y-2">
+                        <div class="flex gap-2 items-center">
+                            <input type="text" name="price_labels[]" placeholder="Non opsyon (pa egzanp: Senp, Jèl)" required class="w-1/2 p-2 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs">
+                            <input type="number" step="0.01" name="prices[]" placeholder="Pri (HTG)" required class="w-1/3 p-2 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs">
+                            <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2 py-1">X</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-price-btn" class="mt-2 text-xs bg-[#FAF7F2] border border-[#E6DAD4] text-[#4A2E2B] font-bold px-3 py-1.5 rounded-xl hover:bg-[#E6DAD4] transition">
+                        + Ajoute yon lòt pri
+                    </button>
+                </div>
+
+                <!-- PATI PLIZYÈ FOTO -->
                 <div>
-                    <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Non Fichye Imaj la (pa egzanp: massage.jpg)</label>
-                    <input type="text" name="image" placeholder="massage.jpg" class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
+                    <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Foto Sèvis yo (Chwazi youn oswa plizyè)</label>
+                    <input type="file" name="images[]" multiple accept="image/png, image/jpeg, image/webp" class="w-full p-2 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs">
+                    <p class="text-[10px] text-[#A38F88] mt-1">Kenbe 'Ctrl' oswa 'Cmd' pou chwazi plizyè imaj an menm tan.</p>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Prix (HTG)</label>
-                        <input type="text" name="price" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Durée (Min)</label>
-                        <input type="number" name="duration_minutes" value="60" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
-                    </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-[#8C6D68] uppercase mb-1">Durée (Min)</label>
+                    <input type="number" name="duration_minutes" value="60" required class="w-full p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs focus:outline-none">
                 </div>
+
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeAddModal()" class="px-4 py-2 rounded-xl border border-[#E6DAD4] text-xs font-bold">Annuler</button>
                     <button type="submit" class="px-5 py-2 rounded-xl bg-[#9C413D] text-white text-xs font-bold">Ajouter</button>
@@ -275,6 +336,19 @@ $total_services = count($services);
             document.getElementById('addModal').classList.add('hidden');
             document.getElementById('addModal').classList.remove('flex');
         }
+
+        // Script pou ajoute jaden pri dinamikman nan modal la
+        document.getElementById('add-price-btn').addEventListener('click', function() {
+            const container = document.getElementById('prices-container');
+            const row = document.createElement('div');
+            row.className = 'flex gap-2 items-center';
+            row.innerHTML = `
+                <input type="text" name="price_labels[]" placeholder="Non opsyon (pa egzanp: Deliks)" required class="w-1/2 p-2 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs">
+                <input type="number" step="0.01" name="prices[]" placeholder="Pri (HTG)" required class="w-1/3 p-2 bg-[#FAF7F2] rounded-xl border border-[#E6DAD4] text-xs">
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2 py-1">X</button>
+            `;
+            container.appendChild(row);
+        });
     </script>
 </body>
 </html>
