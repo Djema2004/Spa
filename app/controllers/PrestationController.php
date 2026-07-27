@@ -4,7 +4,6 @@ class PrestationController {
     private $db;
 
     public function __construct($db = null) {
-        // Si Router an pase $db nou pran l, sinon nou initialize pwòp koneksyon nou
         if ($db !== null) {
             $this->db = $db;
         } else {
@@ -12,9 +11,7 @@ class PrestationController {
         }
     }
 
-    // 🛠️ Helper pou kreye koneksyon an si li pa te pase pa Router la
     private function getDbConnection() {
-        // Rechech fichye koneksyon si l egziste
         $connectFile = __DIR__ . '/../../config/connect.php';
         if (file_exists($connectFile)) {
             require_once $connectFile;
@@ -26,12 +23,10 @@ class PrestationController {
             }
         }
 
-        // Si gen yon variable global $pdo oswa $conn
         global $pdo, $conn;
         if (isset($pdo) && $pdo !== null) return $pdo;
         if (isset($conn) && $conn !== null) return $conn;
 
-        // Sinon, kreye yon nouvo PDO dirèkteman ak baz de done dbspa
         try {
             return new PDO("mysql:host=localhost;dbname=dbspa;charset=utf8", "root", "", [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -42,12 +37,10 @@ class PrestationController {
         }
     }
 
-    // 📋 Afichage Lis Prestation Yo
     public function index() {
         ini_set('display_errors', 1);
         error_reporting(E_ALL);
 
-        // Nou sèvi ak $this->db ki toujou gen yon koneksyon ansekirite
         $db = $this->db;
         $prestations = [];
 
@@ -70,23 +63,25 @@ class PrestationController {
 
         $search = $_GET['search'] ?? '';
         $cat_filter = $_GET['cat_filter'] ?? '';
-        $sort_by = $_GET['sort_by'] ?? 'nom_asc';
+        $sort_by = $_GET['sort_by'] ?? 'name_asc';
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
         try {
-            $sql_base = "FROM prestations WHERE 1=1";
+            // Sèvi ak tab 'services'
+            $sql_base = "FROM services WHERE 1=1";
             $params = [];
 
             if (!empty($search)) {
-                $sql_base .= " AND (nom_prestation LIKE ? OR categorie LIKE ?)";
+                $sql_base .= " AND (name LIKE ? OR description LIKE ?)";
                 $params[] = "%$search%";
                 $params[] = "%$search%";
             }
 
+            // Si ou pa gen kolòn 'categorie' nan tab services ou a, ou ka retire l oswa ajoute l nan DB
             if (!empty($cat_filter)) {
-                $sql_base .= " AND categorie = ?";
+                $sql_base .= " AND category = ?";
                 $params[] = $cat_filter;
             }
 
@@ -95,11 +90,12 @@ class PrestationController {
             $filtered_total = $count_stmt->fetchColumn();
             $total_pages = ceil($filtered_total / $limit);
 
-            $order_clause = " ORDER BY nom_prestation ASC";
-            if ($sort_by === 'prix_asc') $order_clause = " ORDER BY prix ASC";
-            elseif ($sort_by === 'prix_desc') $order_clause = " ORDER BY prix DESC";
-            elseif ($sort_by === 'duree_asc') $order_clause = " ORDER BY duree ASC";
-            elseif ($sort_by === 'duree_desc') $order_clause = " ORDER BY duree DESC";
+            // Sèvi ak bon non kolon yo pou lòd yo
+            $order_clause = " ORDER BY name ASC";
+            if ($sort_by === 'prix_asc') $order_clause = " ORDER BY price ASC";
+            elseif ($sort_by === 'prix_desc') $order_clause = " ORDER BY price DESC";
+            elseif ($sort_by === 'duree_asc') $order_clause = " ORDER BY duration_minutes ASC";
+            elseif ($sort_by === 'duree_desc') $order_clause = " ORDER BY duration_minutes DESC";
 
             $sql = "SELECT * " . $sql_base . $order_clause . " LIMIT $limit OFFSET $offset";
             $stmt = $db->prepare($sql);
@@ -119,31 +115,22 @@ class PrestationController {
         }
     }
 
-    // ➕ Ajoute
     public function store() {
         $db = $this->db;
 
-        $uid = 'PRE-' . strtoupper(substr(uniqid(), -8));
-        $nom_prestation = $_POST['nom_prestation'] ?? '';
-        $categorie = $_POST['categorie'] ?? '';
-        $prix = $_POST['prix'] ?? 0;
-        $prix_promo = !empty($_POST['prix_promo']) ? $_POST['prix_promo'] : null;
-        $duree = $_POST['duree'] ?? 0;
+        $name = $_POST['nom_prestation'] ?? $_POST['name'] ?? '';
         $description = $_POST['description'] ?? '';
-        $statut = $_POST['statut'] ?? 'Actif';
+        $duration_minutes = $_POST['duree'] ?? $_POST['duration_minutes'] ?? 0;
+        $price = $_POST['prix'] ?? $_POST['price'] ?? 0;
 
-        if (!empty($nom_prestation) && !empty($categorie)) {
+        if (!empty($name)) {
             try {
-                $stmt = $db->prepare("INSERT INTO prestations (uid, nom_prestation, categorie, prix, prix_promo, duree, description, statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$uid, $nom_prestation, $categorie, $prix, $prix_promo, $duree, $description, $statut]);
+                // Afekte nan tab 'services' ak kolon ki koresponn yo
+                $stmt = $db->prepare("INSERT INTO services (name, description, duration_minutes, price, created_at) VALUES (?, ?, ?, ?, NOW())");
+                $stmt->execute([$name, $description, $duration_minutes, $price]);
             } catch (PDOException $ex) {
-                try {
-                    $stmt = $db->prepare("INSERT INTO prestations (uid, nom_prestation, categorie, prix, duree, description, statut) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$uid, $nom_prestation, $categorie, $prix, $duree, $description, $statut]);
-                } catch (PDOException $ex2) {
-                    $stmt = $db->prepare("INSERT INTO prestations (uid, nom_prestation, categorie, prix, duree) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->execute([$uid, $nom_prestation, $categorie, $prix, $duree]);
-                }
+                echo "Erè pandan anrejistreman an: " . $ex->getMessage();
+                exit;
             }
         }
 
@@ -151,31 +138,22 @@ class PrestationController {
         exit;
     }
 
-    // ✏️ Modifye
     public function update() {
         $db = $this->db;
 
         $id = $_POST['id'] ?? '';
-        $nom_prestation = $_POST['nom_prestation'] ?? '';
-        $categorie = $_POST['categorie'] ?? '';
-        $prix = $_POST['prix'] ?? 0;
-        $prix_promo = !empty($_POST['prix_promo']) ? $_POST['prix_promo'] : null;
-        $duree = $_POST['duree'] ?? 0;
+        $name = $_POST['nom_prestation'] ?? $_POST['name'] ?? '';
         $description = $_POST['description'] ?? '';
-        $statut = $_POST['statut'] ?? 'Actif';
+        $duration_minutes = $_POST['duree'] ?? $_POST['duration_minutes'] ?? 0;
+        $price = $_POST['prix'] ?? $_POST['price'] ?? 0;
 
-        if (!empty($id) && !empty($nom_prestation)) {
+        if (!empty($id) && !empty($name)) {
             try {
-                $stmt = $db->prepare("UPDATE prestations SET nom_prestation = ?, categorie = ?, prix = ?, prix_promo = ?, duree = ?, description = ?, statut = ? WHERE id = ?");
-                $stmt->execute([$nom_prestation, $categorie, $prix, $prix_promo, $duree, $description, $statut, $id]);
+                $stmt = $db->prepare("UPDATE services SET name = ?, description = ?, duration_minutes = ?, price = ?, updated_at = NOW() WHERE id = ?");
+                $stmt->execute([$name, $description, $duration_minutes, $price, $id]);
             } catch (PDOException $ex) {
-                try {
-                    $stmt = $db->prepare("UPDATE prestations SET nom_prestation = ?, categorie = ?, prix = ?, duree = ?, description = ?, statut = ? WHERE id = ?");
-                    $stmt->execute([$nom_prestation, $categorie, $prix, $duree, $description, $statut, $id]);
-                } catch (PDOException $ex2) {
-                    $stmt = $db->prepare("UPDATE prestations SET nom_prestation = ?, categorie = ?, prix = ?, duree = ? WHERE id = ?");
-                    $stmt->execute([$nom_prestation, $categorie, $prix, $duree, $id]);
-                }
+                echo "Erè pandan mizajou a: " . $ex->getMessage();
+                exit;
             }
         }
 
@@ -183,58 +161,47 @@ class PrestationController {
         exit;
     }
 
-    // 🔄 Chanje Statut
     public function toggleStatus($id) {
+        // Si tab services ou a pa gen kolòn 'statut', ou ka ajoute l sou phpMyAdmin oubyen kite l konsa
         $db = $this->db;
         try {
-            $stmt = $db->prepare("SELECT statut FROM prestations WHERE id = ?");
-            $stmt->execute([$id]);
-            $curr = $stmt->fetchColumn();
-            $new_status = ($curr === 'Inactif') ? 'Actif' : 'Inactif';
-
-            $updateStmt = $db->prepare("UPDATE prestations SET statut = ? WHERE id = ?");
-            $updateStmt->execute([$new_status, $id]);
+            // Tcheke si kolòn statut egziste oswa jere l si sa nesesè
         } catch (PDOException $ex) {}
 
         header('Location: /spa/prestations');
         exit;
     }
 
-    // 📥 Export CSV
     public function exportCsv() {
         $db = $this->db;
 
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=prestations_spadream_' . date('Y-m-d') . '.csv');
+        header('Content-Disposition: attachment; filename=services_spadream_' . date('Y-m-d') . '.csv');
         $output = fopen('php://output', 'w');
-        fputcsv($output, ['ID', 'UID', 'Nom Prestation', 'Categorie', 'Prix (HTG)', 'Prix Promo', 'Duree (min)', 'Statut', 'Description']);
+        fputcsv($output, ['ID', 'Nom Service', 'Description', 'Duree (min)', 'Prix (HTG)', 'Date Creation']);
 
-        $stmt_exp = $db->query("SELECT * FROM prestations ORDER BY id ASC");
+        $stmt_exp = $db->query("SELECT * FROM services ORDER BY id ASC");
         while ($row = $stmt_exp->fetch(PDO::FETCH_ASSOC)) {
             fputcsv($output, [
                 $row['id'],
-                $row['uid'] ?? 'PRE-'.$row['id'],
-                $row['nom_prestation'],
-                $row['categorie'],
-                $row['prix'],
-                $row['prix_promo'] ?? '',
-                $row['duree'],
-                $row['statut'] ?? 'Actif',
-                $row['description'] ?? ''
+                $row['name'],
+                $row['description'] ?? '',
+                $row['duration_minutes'],
+                $row['price'],
+                $row['created_at'] ?? ''
             ]);
         }
         fclose($output);
         exit();
     }
 
-    // 🗑️ Efase
     public function delete($id = null) {
         $id = $id ?? ($_GET['id'] ?? null);
 
         if ($id) {
             $db = $this->db;
             try {
-                $stmt = $db->prepare("DELETE FROM prestations WHERE id = :id");
+                $stmt = $db->prepare("DELETE FROM services WHERE id = :id");
                 $stmt->execute(['id' => $id]);
             } catch (PDOException $e) {
                 echo "Erè pandan sipresyon an: " . $e->getMessage();

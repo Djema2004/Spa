@@ -1,15 +1,16 @@
 <?php
 
 require_once dirname(__DIR__) . '/models/Estheticienne.php';
+// Correction du chemin : on remonte de app/controllers vers app/ puis vers la racine pour atteindre core/Database.php
+require_once dirname(__DIR__) . '/../core/Database.php';
 
 class EstheticienneController {
     private $db;
     private $estheticienneModel;
 
     public function __construct() {
-        require_once dirname(__DIR__) . '/../config/database.php';
-        $database = new Database();
-        $this->db = $database->getConnection();
+        // Utilisation du Singleton Database::getInstance() défini dans core/Database.php
+        $this->db = Database::getInstance();
         $this->estheticienneModel = new Estheticienne($this->db);
     }
 
@@ -128,7 +129,6 @@ class EstheticienneController {
             exit();
         }
 
-        // Si w gen yon vi pou edisyon, mete l isit la (pa egzanp: app/views/admin/estheticienne_edit.php)
         include dirname(__DIR__) . '/views/admin/estheticienne_edit.php';
     }
 
