@@ -16,6 +16,9 @@ try {
     die("Erè koneksyon baz done : " . $e->getMessage());
 }
 
+// Defini chemen baz pou tout lyen yo pa janm gen pwoblèm katab 404
+$baseRoute = "/spa/index.php?url=";
+
 // ==========================================
 // 2. REKIPERASYON DONE POU DASHBOARD LA
 // ==========================================
@@ -40,7 +43,7 @@ $stmtDerniersRdv = $pdo->query("
 ");
 $derniersRdv = $stmtDerniersRdv->fetchAll();
 
-// Sèvis yo ki pi mande (baze sou service_nom oswa name)
+// Sèvis yo ki pi mande
 $stmtTopPrest = $pdo->query("
     SELECT service_nom as nom, COUNT(*) as total 
     FROM appointments 
@@ -88,19 +91,19 @@ $topPrestations = $stmtTopPrest->fetchAll();
             <nav class="space-y-1">
                 <?php 
                 $menu = [
-                    ['Tableau de bord', 'fa-chart-pie', 'dashboard.php'],
-                    ['Prestations', 'fa-spa', 'prestations.php'],
-                    ['Clients', 'fa-users', 'clients.php'],
-                    ['Esthéticiennes', 'fa-user-tie', 'estheticiennes.php'],
-                    ['Administrateurs', 'fa-user-shield', 'admins.php'],
-                    ['Rendez-vous', 'fa-calendar-check', 'rendez_vous.php'],
-                    ['Coupons', 'fa-tag', 'coupons.php'],
-                    ['Paiements', 'fa-credit-card', 'paiements.php']
+                    ['Tableau de bord', 'fa-chart-pie', 'admin/dashboard'],
+                    ['Prestations', 'fa-spa', 'admin/prestations'],
+                    ['Clients', 'fa-users', 'admin/clients'],
+                    ['Esthéticiennes', 'fa-user-tie', 'admin/estheticiennes'],
+                    ['Administrateurs', 'fa-user-shield', 'admin/admins'],
+                    ['Rendez-vous', 'fa-calendar-check', 'admin/appointments'],
+                    ['Coupons', 'fa-tag', 'admin/coupons'],
+                    ['Paiements', 'fa-credit-card', 'admin/paiements']
                 ];
                 foreach($menu as $m): 
                     $isActive = ($m[0] == 'Tableau de bord');
                 ?>
-                    <a href="<?php echo $m[2]; ?>" 
+                    <a href="<?php echo $baseRoute . $m[2]; ?>" 
                        class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl transition font-medium text-sm <?php echo $isActive ? 'bg-[#C87A65] text-white shadow-lg shadow-[#C87A65]/25' : 'text-[#A88B7D] hover:bg-[#F4EBE1]/60 hover:text-[#6B5B52]'; ?>">
                         <i class="fa <?php echo $m[1]; ?> w-5 text-center"></i> 
                         <span><?php echo $m[0]; ?></span>
@@ -110,15 +113,15 @@ $topPrestations = $stmtTopPrest->fetchAll();
         </div>
 
         <div class="pt-4 border-t border-[#EFE1D3] space-y-1">
-            <a href="profil.php" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#A88B7D] hover:bg-[#F4EBE1]/60 hover:text-[#6B5B52] transition font-medium text-sm">
+            <a href="<?php echo $baseRoute; ?>admin/profil" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#A88B7D] hover:bg-[#F4EBE1]/60 hover:text-[#6B5B52] transition font-medium text-sm">
                 <i class="fas fa-user-circle w-5 text-center"></i>
                 <span>Mon Profil</span>
             </a>
-            <a href="parametres.php" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#A88B7D] hover:bg-[#F4EBE1]/60 hover:text-[#6B5B52] transition font-medium text-sm">
+            <a href="<?php echo $baseRoute; ?>admin/parametres" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[#A88B7D] hover:bg-[#F4EBE1]/60 hover:text-[#6B5B52] transition font-medium text-sm">
                 <i class="fas fa-cog w-5 text-center"></i>
                 <span>Paramètres</span>
             </a>
-            <a href="logout.php" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition font-medium text-sm">
+            <a href="<?php echo $baseRoute; ?>logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition font-medium text-sm">
                 <i class="fas fa-sign-out-alt w-5 text-center"></i>
                 <span>Déconnexion</span>
             </a>
@@ -137,16 +140,16 @@ $topPrestations = $stmtTopPrest->fetchAll();
             
             <div class="flex items-center gap-4">
                 <div class="flex gap-2 bg-white/60 p-1.5 rounded-2xl border border-[#EFE1D3]/80 shadow-sm">
-                    <a href="clients.php" class="bg-[#C87A65] text-white w-9 h-9 rounded-xl hover:bg-[#A65B47] transition shadow-sm flex items-center justify-center" title="Nouveau Client">
+                    <a href="<?php echo $baseRoute; ?>admin/clients" class="bg-[#C87A65] text-white w-9 h-9 rounded-xl hover:bg-[#A65B47] transition shadow-sm flex items-center justify-center" title="Nouveau Client">
                         <i class="fas fa-user-plus text-xs"></i>
                     </a>
-                    <a href="prestations.php" class="bg-[#C87A65] text-white w-9 h-9 rounded-xl hover:bg-[#A65B47] transition shadow-sm flex items-center justify-center" title="Nouvelle Prestation">
+                    <a href="<?php echo $baseRoute; ?>admin/prestations" class="bg-[#C87A65] text-white w-9 h-9 rounded-xl hover:bg-[#A65B47] transition shadow-sm flex items-center justify-center" title="Nouvelle Prestation">
                         <i class="fas fa-spa text-xs"></i>
                     </a>
-                    <a href="rendez_vous.php" class="bg-[#C87A65] text-white w-9 h-9 rounded-xl hover:bg-[#A65B47] transition shadow-sm flex items-center justify-center" title="Nouveau Rendez-vous">
+                    <a href="<?php echo $baseRoute; ?>admin/appointments" class="bg-[#C87A65] text-white w-9 h-9 rounded-xl hover:bg-[#A65B47] transition shadow-sm flex items-center justify-center" title="Nouveau Rendez-vous">
                         <i class="fas fa-calendar-plus text-xs"></i>
                     </a>
-                    <a href="admins.php" class="bg-[#A65B47] text-white w-9 h-9 rounded-xl hover:bg-[#854737] transition shadow-sm flex items-center justify-center" title="Ajouter / Jere Administratè">
+                    <a href="<?php echo $baseRoute; ?>admin/admins" class="bg-[#A65B47] text-white w-9 h-9 rounded-xl hover:bg-[#854737] transition shadow-sm flex items-center justify-center" title="Ajouter / Jere Administratè">
                         <i class="fas fa-user-shield text-xs"></i>
                     </a>
                 </div>
@@ -163,17 +166,17 @@ $topPrestations = $stmtTopPrest->fetchAll();
                     </button>
 
                     <div class="absolute right-0 mt-2 w-48 bg-white/95 rounded-2xl shadow-xl border border-[#EFE1D3] py-2 hidden group-hover:block z-50 backdrop-blur-md">
-                        <a href="profil.php" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-[#6B5B52] hover:bg-[#FAF6F0] hover:text-[#C87A65] transition">
+                        <a href="<?php echo $baseRoute; ?>admin/profil" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-[#6B5B52] hover:bg-[#FAF6F0] hover:text-[#C87A65] transition">
                             <i class="fas fa-user-circle text-sm text-[#A88B7D]"></i> Mon Profil
                         </a>
-                        <a href="admins.php" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-[#6B5B52] hover:bg-[#FAF6F0] hover:text-[#C87A65] transition">
+                        <a href="<?php echo $baseRoute; ?>admin/admins" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-[#6B5B52] hover:bg-[#FAF6F0] hover:text-[#C87A65] transition">
                             <i class="fas fa-user-shield text-sm text-[#A88B7D]"></i> Jere Administratè
                         </a>
-                        <a href="parametres.php" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-[#6B5B52] hover:bg-[#FAF6F0] hover:text-[#C87A65] transition">
+                        <a href="<?php echo $baseRoute; ?>admin/parametres" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-[#6B5B52] hover:bg-[#FAF6F0] hover:text-[#C87A65] transition">
                             <i class="fas fa-cog text-sm text-[#A88B7D]"></i> Paramètres
                         </a>
                         <hr class="my-1 border-[#EFE1D3]">
-                        <a href="logout.php" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition">
+                        <a href="<?php echo $baseRoute; ?>logout" class="flex items-center gap-3 px-4 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition">
                             <i class="fas fa-sign-out-alt text-sm"></i> Déconnexion
                         </a>
                     </div>
@@ -212,7 +215,7 @@ $topPrestations = $stmtTopPrest->fetchAll();
                 <div class="glass-card p-6 rounded-3xl border border-white/60 shadow-sm">
                     <div class="flex items-center justify-between mb-5">
                         <h3 class="font-bold font-serif text-lg text-[#A65B47]">Prochains Rendez-vous</h3>
-                        <a href="rendez_vous.php" class="text-xs font-bold text-[#C87A65] hover:underline">Voir tout</a>
+                        <a href="<?php echo $baseRoute; ?>admin/appointments" class="text-xs font-bold text-[#C87A65] hover:underline">Voir tout</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
